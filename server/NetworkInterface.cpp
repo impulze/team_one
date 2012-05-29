@@ -6,6 +6,10 @@
 
 #include "NetworkInterface.h"
 
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <arpa/inet.h>
+
 NetworkInterface::NetworkInterface(int port)
 {
 	// create a socket for listening
@@ -16,10 +20,10 @@ NetworkInterface::NetworkInterface(int port)
 	struct sockaddr_in socket_address =
 	{
 		.sin_family = AF_INET,
-		.sin_port = port
+		.sin_port = htons(port)
 	};
 	inet_pton(AF_INET, "127.0.0.1", &socket_address.sin_addr);
 	// TODO: check for errors
-	bind(this->listener, &socket_address, sizeof(socket_address));
+	bind(this->listener, reinterpret_cast<sockaddr *>(&socket_address), sizeof(socket_address));
 	// TODO: check for errors
 }

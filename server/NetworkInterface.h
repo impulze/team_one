@@ -4,8 +4,6 @@
  * created: Friday, 11th May 2012
  **/
 
-#include <sys/socket.h>
-
 class NetworkInterface
 {
 	public:
