@@ -7,3 +7,7 @@ namespace database_errors
 	{
 	}
 }
+
+Database::~Database()
+{
+}

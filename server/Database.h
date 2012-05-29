@@ -41,6 +41,12 @@ namespace database_errors
 class Database
 {
 public:
+	/**
+	 * Deconstruct a database object, freeing all its resources and closing
+	 * the connection.
+	 */
+	virtual ~Database();
+
 	// A result consisting of column name and value.
 	typedef std::unordered_map<std::string, std::string> result_t;
 
