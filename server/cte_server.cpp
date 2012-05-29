@@ -6,6 +6,7 @@
 
 #include "MainNetworkEventHandler.h"
 #include "NetworkInterface.h"
+#include "SQLiteDatabase.h"
 
 #include <cstdlib>
 
@@ -22,6 +23,8 @@ int main(int argc, char **argv)
 	while (1)
 	{ network_interface.listen(); }
 #endif
-	
+
+	SQLiteDatabase sqlite_db("db.sql");
+
 	return EXIT_SUCCESS;
 }

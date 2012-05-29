@@ -8,4 +8,4 @@ MainNetworkEventHandler.o: MainNetworkEventHandler.cpp Client.h \
 Message.o: Message.cpp exceptions.h Message.h Client.h exceptions.tcc
 NetworkInterface.o: NetworkInterface.cpp NetworkInterface.h
 cte_server.o: cte_server.cpp MainNetworkEventHandler.h \
-  NetworkEventHandler.h NetworkInterface.h
+  NetworkEventHandler.h NetworkInterface.h SQLiteDatabase.h Database.h
