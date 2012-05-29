@@ -4,8 +4,6 @@
  * created: Friday, 11th May 2012
  **/
 
-#include <sys/socket>
-
 class NetworkInterface
 {
 	public:
@@ -13,4 +11,4 @@ class NetworkInterface
 	
 	private:
 		int listener;
-}
+};

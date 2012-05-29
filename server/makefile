@@ -1,5 +1,15 @@
-all: Client.cpp NetworkInterface.cpp Message.cpp
-	g++ -std=c++0x -o server $^
+CXX = clang++ -std=c++11
+
+LINK.o = $(CXX) $(LDFLAGS) $(TARGET_ARCH)
+
+LDLIBS += -lsqlite3
+
+OBJS = Database.o SQLiteDatabase.o Server.o
+
+all: Server
+
+Server: $(OBJS)
+	$(CXX) $(LDFLAGS) $(TARGET_ARCH) -o $@ $^ $(LDLIBS)
 
 clean:
-	rm -f server *.o
+	$(RM) Server $(OBJS)
