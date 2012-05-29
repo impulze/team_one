@@ -4,6 +4,9 @@
 	created: Wednesday, 23rd May 2012
 **/
 
+#include "MainNetworkEventHandler.h"
+#include "NetworkInterface.h"
+
 #include <cstdlib>
 
 int main(int argc, char **argv)
@@ -11,10 +14,14 @@ int main(int argc, char **argv)
 	MainNetworkEventHandler main_handler;
 	NetworkInterface network_interface(1337);
 	
-	network_interface.add_event_handler(&main_handler);
+	// FIXME: add_event_handler doesn't exist
+	//network_interface.add_event_handler(&main_handler);
 	
+	// FIXME: no listen() in NetworkInterface
+#if 0
 	while (1)
 	{ network_interface.listen(); }
+#endif
 	
 	return EXIT_SUCCESS;
 }

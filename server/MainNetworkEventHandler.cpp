@@ -4,11 +4,8 @@
 	created: Wednesday, 23rd May 2012
 **/
 
-#ifndef _MAINNETWORKHANDLER_H_
-#define _MAINNETWORKHANDLER_H_
-
-class MainNetworkEventHandler : NetworkEventHandler
-{};
+#include "Client.h"
+#include "MainNetworkEventHandler.h"
 
 void MainNetworkEventHandler::on_document_activate(Client &client, uint32_t document_id) const
 { client.active_document = document_id; }
@@ -39,7 +36,9 @@ void MainNetworkEventHandler::on_sync_byte(Client &client, char byte) const
 }
 
 void MainNetworkEventHandler::on_sync_cursor(Client &client, uint64_t position) const
-{ client.cursor = position; }
+{	// TODO: there's no cursor in client
+	//client.cursor = position;
+}
 
 void MainNetworkEventHandler::on_sync_deletion(Client &client, uint64_t position, uint64_t length) const
 {
@@ -60,5 +59,3 @@ void MainNetworkEventHandler::on_user_logout(Client &client) const
 {
 	// TODO: delete everything from client!!!
 }
-
-#endif

@@ -14,7 +14,8 @@ Client &ClientCollection::add_client(int socket)
 	{ throw Exception::ClientAlreadyAdded("client already added"); }
 	
 	// create the client object and assign it to the given socket
-	ClientSptr client(new Client(socket));
+	// FIXME: get user_id
+	ClientSptr client(new Client(socket, 0));
 	this->clients[socket] = const_cast<ClientSptr&>(client);
 	
 	return *client;

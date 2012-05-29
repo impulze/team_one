@@ -12,6 +12,8 @@ Message::Message(Client &client):
 	byte('\0'), payload(NULL), id(0), position(0), size(0)
 {
 	// get message type
+	// FIXME: receive does not have any parameter
+#if 0
 	client.receive(&this->type, MSGF_SIZE_TYPE);
 	
 	// get first data
@@ -61,6 +63,7 @@ Message::Message(Client &client):
 			client.receive(&this->payload, this->size);
 			break;
 	}
+#endif
 }
 
 Message::~Message(void)
