@@ -62,7 +62,7 @@ public:
 	 */
 	~SQLiteDatabase();
 
-	bool correct_sql(std::string const &statement) const;
+	bool complete_sql(std::string const &statement) const;
 
 	results_t execute_sql(std::string const &statement);
 

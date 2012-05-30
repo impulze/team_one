@@ -54,12 +54,13 @@ public:
 	typedef std::vector<result_t> results_t;
 
 	/**
-	 * Check if the SQL statement is well-formed.
+	 * Check if the SQL statement is complete.
 	 *
 	 * @param statement The statement to check.
-	 * @return If the statement is well-formed 'true', 'false' otherwise.
+	 * @return 'true' if the statement can be processed by the underlying
+	 *         implementation, 'false' otherwise.
 	 */
-	virtual bool correct_sql(std::string const &statement) const = 0;
+	virtual bool complete_sql(std::string const &statement) const = 0;
 
 	/**
 	 * Execute one SQL query.

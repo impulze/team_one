@@ -43,13 +43,10 @@ SQLiteDatabase::~SQLiteDatabase()
 	}
 }
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-bool SQLiteDatabase::correct_sql(std::string const &statement) const
+bool SQLiteDatabase::complete_sql(std::string const &statement) const
 {
-	throw std::logic_error("unimplemented");
+	return sqlite3_complete(statement.c_str()) != 0;
 }
-#pragma GCC diagnostic pop
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
