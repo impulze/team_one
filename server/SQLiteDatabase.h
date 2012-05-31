@@ -49,13 +49,38 @@ class SQLiteDatabase
 {
 public:
 	/**
+	 * Move a SQLite database connection.
+	 *
+	 * The resources are moved and you can no longer expect
+	 * any useful state of this object after moving it.
+	 */
+	SQLiteDatabase(SQLiteDatabase &&);
+
+	/**
 	 * Construct a new SQLite database connection.
 	 *
+	 * The path should be accessible. If the file does not exists, it is
+	 * created.
+	 *
+	 * Valid paths either begin with '/' or './'.
+	 *
 	 * @param path The absolute or relative path to the database file.
+	 * @throws std::runtime_error Thrown if the path is invalid.
 	 * @throws database_errors::SQLiteConnectionError Thrown if an error occurs during
 	 *                                                establishing the connection.
 	 */
-	SQLiteDatabase(std::string const &path);
+	static SQLiteDatabase from_path(std::string const &path);
+
+	/**
+	 * Construct a new SQLite database connection.
+	 *
+	 * The database is held in memory and automatically removed once the destructor
+	 * is called.
+	 *
+	 * @throws database_errors::SQLiteConnectionError Thrown if an error occurs during
+	 *                                                establishing the connection.
+	 */
+	static SQLiteDatabase temporary();
 
 	/**
 	 * Deconstruct a SQLite database object. Close the connection to the SQLite file.
@@ -65,6 +90,18 @@ public:
 	bool complete_sql(std::string const &statement) const;
 
 	results_t execute_sql(std::string const &statement);
+
+private:
+	/**
+	 * Construct a new SQLite database connection.
+	 *
+	 * This is basically a wrapper around the C API call and should
+	 * be used by the public constructors only.
+	 *
+	 * @throws database_errors::SQLiteConnectionError Thrown if an error occurs during
+	 *                                                establishing the connection.
+	 */
+	explicit SQLiteDatabase(std::string const &path);
 
 private:
 	// A handle to the SQLite3 database used in the C API.
