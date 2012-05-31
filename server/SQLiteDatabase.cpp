@@ -25,23 +25,39 @@ namespace
 	                         char **column_names);
 }
 
-SQLiteDatabase::SQLiteDatabase(std::string const &path)
+SQLiteDatabase::SQLiteDatabase(SQLiteDatabase &&other)
+	: handle_(other.handle_)
 {
-	int const result = sqlite3_open(path.c_str(), &handle_);
+	other.handle_ = 0;
+}
 
-	if (result)
+SQLiteDatabase SQLiteDatabase::from_path(std::string const &path)
+{
+	if (path[0] != '/' && (path[0] != '.' || path[1] != '/'))
 	{
-		// throw an error if the connection failed
-		char const *error = sqlite3_errmsg(handle_);
-
-		throw database_errors::SQLiteConnectionError(error);
+		throw std::runtime_error("invalid path, should begin with either '/' or './'");
 	}
+
+	return SQLiteDatabase(path);
+}
+
+SQLiteDatabase SQLiteDatabase::temporary()
+{
+	return SQLiteDatabase(":memory:");
 }
 
 SQLiteDatabase::~SQLiteDatabase()
 {
 	int const result = sqlite3_close(handle_);
 
+	/** according to the sqlite3 C API the close call should only
+	 *  return non-zero if there are outstanding transactions and since
+	 *  this implementation only offers a wrapper around full SQL statements
+	 *  (commited and finalized), this should never be non-zero
+	 */
+	assert(result == 0);
+
+#if 0
 	if (result)
 	{
 		// just print a warning, don't throw in the destructor
@@ -49,6 +65,7 @@ SQLiteDatabase::~SQLiteDatabase()
 
 		std::cerr << error << '\n';
 	}
+#endif
 }
 
 bool SQLiteDatabase::complete_sql(std::string const &statement) const
@@ -103,6 +120,22 @@ SQLiteDatabase::results_t SQLiteDatabase::execute_sql(std::string const &stateme
 	}
 
 	return results;
+}
+
+SQLiteDatabase::SQLiteDatabase(std::string const &path)
+{
+	int const result = sqlite3_open_v2(
+		path.c_str(), &handle_,
+		SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE,
+		NULL);
+
+	if (result)
+	{
+		// throw an error if the connection failed
+		char const *error = sqlite3_errmsg(handle_);
+
+		throw database_errors::SQLiteConnectionError(error);
+	}
 }
 
 namespace
