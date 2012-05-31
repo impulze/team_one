@@ -13,21 +13,25 @@
 
 namespace Exception
 {
-	class ClientAlreadyAdded
-		: public std::invalid_argument
+	struct ClientAlreadyAdded : std::invalid_argument
 	{
-		public:
-			template<typename T>
-			ClientAlreadyAdded(T msg);
+		template<typename T>
+		ClientAlreadyAdded(T msg);
+	};
+	
+	struct ErrnoError : std::runtime_error
+	{
+		const int			 error;
+		const char			*const function;
+		template<typename T>
+		ErrnoError(T msg, int error, const char *function = 0);
 	};
 
-	class InvalidMessageType
-		: public std::runtime_error
+	struct InvalidMessageType : std::runtime_error
 	{
-		public:
-			MessageType	type;
-			template <class T>
-			InvalidMessageType(T msg, MessageType type);
+		const Message::MessageType type;
+		template <class T>
+		InvalidMessageType(T msg, Message::MessageType type);
 	};
 };
 

@@ -13,7 +13,12 @@ Exception::ClientAlreadyAdded::ClientAlreadyAdded(T msg):
 {}
 
 template<typename T>
-Exception::InvalidMessageType::InvalidMessageType(T msg, MessageType type):
+Exception::ErrnoError::ErrnoError(T msg, int error, const char *function):
+	std::runtime_error(msg), error(error), function(function)
+{}
+
+template<typename T>
+Exception::InvalidMessageType::InvalidMessageType(T msg, Message::MessageType type):
 	std::runtime_error(msg), type(type)
 {}
 

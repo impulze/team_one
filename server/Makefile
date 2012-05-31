@@ -17,9 +17,9 @@ Server: $(OBJS)
 clean:
 	$(RM) Server $(OBJS)
 
-Makefile.depend: $(OBJS:%.o=%.cpp)
-	$(CXX) -MM $^ > ./Makefile.depend
+#Makefile.depend: $(OBJS:%.o=%.cpp)
+#	$(CXX) -MM $^ > ./Makefile.depend
 
 depend: ./Makefile.depend
 
--include ./Makefile.depend
+#-include ./Makefile.depend

@@ -8,19 +8,34 @@
 #define _CLIENT_H_
 
 #include <cstdint> // uint32_t
+#include <vector>
 
 class Client
 {
 	public:
 		uint32_t	active_document;
-		int			socket;
+		uint64_t	cursor;
 		uint32_t	user_id;
 
-		Client(int socket, uint32_t user_id);
+		/*
+			Uses the specified listening socket to accept a new incoming client connection. Therefore it uses the low-level function accept (sys/socket.h).
+				listener - listening socket
+			=#	Exception::ErrnoException - if accept fails
+		*/
+		Client(int listener);
+		/*
+			Closes the client's socket.
+		*/
 		~Client(void);
 
-		char *receive(void);
-		void send(char *bytes);
+		template<typename T>
+		void receive(T *destination, uint64_t size);
+		void send(std::vector<char> &bytes);
+
+	private:
+		int	socket;
 };
+
+#include "Client.tcc"
 
 #endif

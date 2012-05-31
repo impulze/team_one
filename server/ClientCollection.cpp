@@ -5,6 +5,7 @@
 **/
 
 #include "exceptions.h"
+#include "Client.h"
 #include "ClientCollection.h"
 
 Client &ClientCollection::add_client(int socket)
@@ -15,7 +16,7 @@ Client &ClientCollection::add_client(int socket)
 	
 	// create the client object and assign it to the given socket
 	// FIXME: get user_id
-	ClientSptr client(new Client(socket, 0));
+	ClientSptr client(new Client(socket));
 	this->clients[socket] = const_cast<ClientSptr&>(client);
 	
 	return *client;
