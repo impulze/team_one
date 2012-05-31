@@ -42,10 +42,28 @@ class Database
 {
 public:
 	/**
+	 * Construct a database object.
+	 * Provide a default constructor, because this is just an interface.
+	 */
+	Database() = default;
+
+	/**
 	 * Deconstruct a database object, freeing all its resources and closing
 	 * the connection.
 	 */
 	virtual ~Database();
+
+	/**
+	 * Delete the default copy constructor, making copying a database
+	 * object impossible.
+	 */
+	Database(Database const &) = delete;
+
+	/**
+	 * Delete the default assignment operator, making assigning a database
+	 * object impossible.
+	 */
+	Database &operator=(Database const &) = delete;
 
 	// A result consisting of column name and value.
 	typedef std::unordered_map<std::string, std::string> result_t;
