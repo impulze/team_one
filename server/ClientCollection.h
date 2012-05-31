@@ -19,16 +19,28 @@ class ClientCollection
 {
 	public:
 		/**
-			Creates a new Client object and assigns it to the given socket.
-				socket
-			 =>	reference to the newly created Client
-			 =#	Exception::ClientAlreadyAdded
-					there is already a Client assigned to the given socket
+			Creates a new Client object and adds it to the map.
+				listener
+			=>	reference to the newly created Client
+			=#	Client::Client
 		**/
-		Client &add_client(int socket);
+		Client &add_client(int listener);
+		
+		/**
+			Adds all clients' sockets to the given fd_set using the makro FD_SET.
+				set
+			=>	client socket with the highest integral value of all added plus 1 (for use in select)
+		**/
+		int fill_fd_set(fd_set *set) const;
 		
 	private:
+		/// maps socket => Client
 		std::unordered_map<int, ClientSptr> clients;
 };
 
 #endif
+
+12:44 gruppengesp
+13:10 teamgesp: fachmod
+13:18 kundengesp: netzwerk
+13:48

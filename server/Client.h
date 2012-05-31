@@ -15,6 +15,7 @@ class Client
 	public:
 		uint32_t	active_document;
 		uint64_t	cursor;
+		const int	socket;
 		uint32_t	user_id;
 
 		/*
@@ -31,9 +32,6 @@ class Client
 		template<typename T>
 		void receive(T *destination, uint64_t size);
 		void send(std::vector<char> &bytes);
-
-	private:
-		int	socket;
 };
 
 #include "Client.tcc"

@@ -8,16 +8,23 @@
 #include "Client.h"
 #include "ClientCollection.h"
 
-Client &ClientCollection::add_client(int socket)
+Client &ClientCollection::add_client(int listener)
 {
-	// check if there is already a client assigned to the given socket
-	if (this->clients.find(socket) != this->clients.end())
-	{ throw Exception::ClientAlreadyAdded("client already added"); }
-	
-	// create the client object and assign it to the given socket
-	// FIXME: get user_id
-	ClientSptr client(new Client(socket));
-	this->clients[socket] = const_cast<ClientSptr&>(client);
+	ClientSptr client(new Client(listener));
+	this->clients[client->socket] = client;
 	
 	return *client;
+}
+
+int ClientCollection::fill_fd_set(fd_set *set) const
+{
+	int end = 0;
+	
+	for (const std::pair<int, ClientSptr> &client: this->clients)
+	{
+		FD_SET(client.first, set);
+		end = std::max(end, client.first);
+	}
+	
+	return end;
 }
