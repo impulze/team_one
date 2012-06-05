@@ -7,7 +7,11 @@
 #ifndef _NETWORKINTERFACE_H_
 #define _NETWORKINTERFACE_H_
 
+#include <forward_list>
+
 #include "ClientCollection.h"
+
+typedef void (*NetworkMessageHandler)(const Message &);
 
 class NetworkInterface
 {
@@ -24,11 +28,18 @@ class NetworkInterface
 		**/
 		NetworkInterface(int port, int backlog = 4);
 		
+		/**
+			Main routine that looks for incoming client connections and messages and processes the
+			latter as necessary.
+			=#	Exception::ErrnoError - select failed
+			=#	ClientCollection::add_client
+		**/
 		void run(void);
 	
 	private:
-		ClientCollection	clients;
-		int					listener;
+		ClientCollection							clients;
+		int											listener;
+		std::forward_list<NetworkMessageHandler>	message_handlers;
 };
 
 #endif

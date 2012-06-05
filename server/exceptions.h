@@ -31,9 +31,10 @@ namespace Exception
 
 	struct InvalidMessageType : std::runtime_error
 	{
-		const Message::MessageType type;
+		const int					socket;
+		const Message::MessageType	type;
 		template <class T>
-		InvalidMessageType(T msg, Message::MessageType type);
+		InvalidMessageType(T msg, Message::MessageType type, int socket);
 	};
 };
 

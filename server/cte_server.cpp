@@ -4,7 +4,6 @@
 	created: Wednesday, 23rd May 2012
 **/
 
-#include "MainNetworkEventHandler.h"
 #include "NetworkInterface.h"
 #include "SQLiteDatabase.h"
 
@@ -12,7 +11,6 @@
 
 int main(int argc, char **argv)
 {
-	MainNetworkEventHandler main_handler;
 	NetworkInterface network_interface(1337);
 	
 	// FIXME: add_event_handler doesn't exist

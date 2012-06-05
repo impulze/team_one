@@ -42,5 +42,35 @@ void NetworkInterface::run(void)
 	fd_set set;
 	FD_ZERO(&set);
 	FD_SET(this->listener, &set);
-	int end = std::max(this->listener, this->clients.fill_fd_set(&set));
+	int end = std::max(this->listener, this->clients.fill_fd_set(&set)) + 1;
+	
+	// select
+	int selected_amount = select(end, &set, 0, 0, 0);
+	if (selected_amount == -1)
+	{ throw Exception::ErrnoError("select failed", "select"); }
+	
+	// check for incoming client connections
+	if (selected_amount == 0)
+	{ return; }
+	if (FD_ISSET(this->listener, &set))
+	{
+		this->clients.accept_client(this->listener);
+		--selected_amount;
+	}
+	
+	// receive messages
+	MessageList messages(selected_amount);
+	this->clients.get_messages_by_fd_set(&set, end, messages);
+
+	// process received messages
+	for (const Message &message: messages)
+	{
+		// skip if message is empty or invalid
+		if (message.source == 0 || message.type == Message::TYPE_INVALID)
+		{ continue; }
+		
+		// trigger events for all event handlers
+		for (const NetworkMessageHandler &handler: message_handlers)
+		{ handler(message); }
+	}
 }
