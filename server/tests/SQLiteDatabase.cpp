@@ -15,10 +15,10 @@ namespace
 	}
 }
 
-using namespace database_errors;
-
 BOOST_AUTO_TEST_CASE(construction)
 {
+	using database_errors::SQLiteConnectionError;
+
 	BOOST_CHECK_NO_THROW(SQLiteDatabase::from_path("./db.sql"));
 	BOOST_CHECK_NO_THROW(SQLiteDatabase::temporary());
 	BOOST_CHECK_EXCEPTION(
@@ -44,6 +44,8 @@ BOOST_AUTO_TEST_CASE(sql_complete)
 
 BOOST_AUTO_TEST_CASE(sql_execute)
 {
+	using database_errors::SQLiteError;
+
 	SQLiteDatabase sqlite_db = SQLiteDatabase::temporary();
 
 	BOOST_CHECK_NO_THROW(sqlite_db.execute_sql("CREATE TABLE foo (INTEGER);"));
