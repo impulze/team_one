@@ -20,7 +20,7 @@ TEST_BIN_OBJS = $(OBJS) $(TEST_OBJS) tests/cte_server.o
 TEST_BIN_SRCS = $(TEST_BIN_OBJS:%.o=%.cpp)
 TEST_BIN_DEPS = $(TEST_BIN_OBJS:%=deps/%)
 
-all: Server
+all: Server tests/Server
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -MM -MT $@ $< > deps/$@
