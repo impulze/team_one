@@ -35,13 +35,22 @@ BOOST_AUTO_TEST_CASE(construction)
 		BOOST_CHECK_NO_THROW(SQLiteError tmp(message));
 	}
 
+	// check valid creation
 	BOOST_CHECK_NO_THROW(SQLiteDatabase::from_path("./db.sql"));
 	BOOST_CHECK_NO_THROW(SQLiteDatabase::temporary());
+
+	// this should fail because / is not a file
 	BOOST_CHECK_EXCEPTION(
 		SQLiteDatabase::from_path("/"), SQLiteConnectionError, stub_predicate);
+
+	/* this is supported by SQLite but not but our implementation, make sure
+	 * it isn't
+	 */
 	BOOST_CHECK_EXCEPTION(
 		SQLiteDatabase::from_path("file://uri"), std::runtime_error,
 		stub_predicate);
+
+	// those should fail because they don't start with / or ./
 	BOOST_CHECK_EXCEPTION(
 		SQLiteDatabase::from_path(".db.sql"), std::runtime_error,
 		stub_predicate);
@@ -54,6 +63,7 @@ BOOST_AUTO_TEST_CASE(sql_complete)
 {
 	SQLiteDatabase sqlite_db = SQLiteDatabase::temporary();
 
+	// complete sql statements end with ;
 	BOOST_CHECK(!sqlite_db.complete_sql("CREATE TABLE foo"));
 	BOOST_CHECK(sqlite_db.complete_sql("CREATE TABLE foo;"));
 }
@@ -62,11 +72,18 @@ BOOST_AUTO_TEST_CASE(sql_execute)
 {
 	using database_errors::SQLiteError;
 
-	SQLiteDatabase sqlite_db = SQLiteDatabase::temporary();
-
-	BOOST_CHECK_NO_THROW(sqlite_db.execute_sql("CREATE TABLE foo (INTEGER);"));
+	/* check CREATE syntax according to some examples in
+	 * http://www.sqlite.org/lang_createtable.html
+	 */
+	BOOST_CHECK_NO_THROW(
+		SQLiteDatabase::temporary().
+			execute_sql("CREATE TABLE foo (name);"));
+	BOOST_CHECK_NO_THROW(
+		SQLiteDatabase::temporary().
+			execute_sql("CREATE TABLE foo (name INTEGER);"));
 	BOOST_CHECK_EXCEPTION(
-		sqlite_db.execute_sql("CREATE TABLE foo;"), SQLiteError, stub_predicate);
+		SQLiteDatabase::temporary().
+			execute_sql("CREATE TABLE foo;"), SQLiteError, stub_predicate);
 
 }
 
