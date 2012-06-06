@@ -57,6 +57,8 @@ SQLiteDatabase::~SQLiteDatabase()
 	 */
 	assert(result == 0);
 
+	// make sure that a second destruction results in a no-op
+	handle_ = 0;
 #if 0
 	if (result)
 	{
