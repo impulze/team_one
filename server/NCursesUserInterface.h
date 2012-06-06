@@ -4,13 +4,13 @@
 #include "UserInterface.h"
 
 /**
- * @file ReadlineUserInterface.h
+ * @file NCursesUserInterface.h
  * @author Daniel Mierswa <daniel.mierswa@student.hs-rm.de>
  *
- * Readline implementation for the user command line interface.
+ * NCurses implementation for the user command line interface.
  */
 
-class ReadlineUserInterface
+class NCursesUserInterface
 	: public UserInterface
 {
 public:
