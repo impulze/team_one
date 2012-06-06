@@ -4,7 +4,7 @@
  * @file Database.cpp
  * @author Daniel Mierswa <daniel.mierswa@student.hs-rm.de>
  *
- * Implementation file for common abstractions of Database things.
+ * Implementation file for common abstractions of database things.
  */
 
 namespace database_errors
