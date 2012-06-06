@@ -1,3 +1,4 @@
 *.o
 /Server
 /tests/Server
+/config.mk

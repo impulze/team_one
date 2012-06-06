@@ -42,3 +42,4 @@ clean:
 
 -include $(BIN_DEPS)
 -include $(TEST_BIN_DEPS)
+-include config.mk
