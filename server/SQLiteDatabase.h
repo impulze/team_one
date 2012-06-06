@@ -3,6 +3,13 @@
 
 #include "Database.h"
 
+/**
+ * @file SQLiteDatabase.h
+ * @author Daniel Mierswa <daniel.mierswa@student.hs-rm.de>
+ *
+ * SQLite3 implementation for the Database interface.
+ */
+
 // Forward declaration of the SQLite3 handle type.
 struct sqlite3;
 
