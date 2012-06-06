@@ -40,7 +40,7 @@ SQLiteDatabase::SQLiteDatabase(SQLiteDatabase &&other)
 
 SQLiteDatabase SQLiteDatabase::from_path(std::string const &path)
 {
-	if (path[0] != '/' && (path[0] != '.' || path[1] != '/'))
+	if (path.length() > 1 && path[0] != '/' && (path[0] != '.' || path[1] != '/'))
 	{
 		throw std::runtime_error("invalid path, should begin with either '/' or './'");
 	}
