@@ -13,11 +13,27 @@ namespace
 	{
 		return true;
 	}
+
+	// some random messages with whitespaces/empty etc.
+	std::vector<std::string> const g_sqlite_database_failure_messages {
+		"foo",
+		"\"  askd 20202020 NULL",
+		"",
+		"\n\t\v\b"
+	};
 }
 
 BOOST_AUTO_TEST_CASE(construction)
 {
 	using database_errors::SQLiteConnectionError;
+	using database_errors::SQLiteError;
+
+	// construct with random strings
+	for (auto const &message: g_sqlite_database_failure_messages)
+	{
+		BOOST_CHECK_NO_THROW(SQLiteConnectionError tmp(message));
+		BOOST_CHECK_NO_THROW(SQLiteError tmp(message));
+	}
 
 	BOOST_CHECK_NO_THROW(SQLiteDatabase::from_path("./db.sql"));
 	BOOST_CHECK_NO_THROW(SQLiteDatabase::temporary());
@@ -52,6 +68,19 @@ BOOST_AUTO_TEST_CASE(sql_execute)
 	BOOST_CHECK_EXCEPTION(
 		sqlite_db.execute_sql("CREATE TABLE foo;"), SQLiteError, stub_predicate);
 
+}
+
+BOOST_AUTO_TEST_CASE(exception_string_passing)
+{
+	using database_errors::SQLiteConnectionError;
+	using database_errors::SQLiteError;
+
+	// check if the string passed equals the one in what()
+	for (auto const &message: g_sqlite_database_failure_messages)
+	{
+		BOOST_CHECK_EQUAL(message, SQLiteConnectionError(message).what());
+		BOOST_CHECK_EQUAL(message, SQLiteError(message).what());
+	}
 }
 
 BOOST_AUTO_TEST_SUITE_END()
