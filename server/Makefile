@@ -2,8 +2,6 @@ CXX = clang++ -std=c++11
 
 LINK.o = $(CXX) $(LDFLAGS) $(TARGET_ARCH)
 
-BOOST_UTF_CXXFLAGS = -I/usr/include/boost/
-
 LDLIBS += -lsqlite3
 
 OBJS = Database.o SQLiteDatabase.o
