@@ -1,5 +1,6 @@
 CXX = clang++ -std=c++11
 
+CXXFLAGS += -Wall -Wextra
 LINK.o = $(CXX) $(LDFLAGS) $(TARGET_ARCH)
 
 BOOST_UTF_CXXFLAGS = -I/usr/include/boost/
