@@ -15,7 +15,7 @@
 class UserInterface
 {
 public:
-	std::string get_input() = 0;
+	virtual std::string get_input() = 0;
 };
 
 #endif
