@@ -5,6 +5,13 @@
 
 #include <sqlite3.h>
 
+/**
+ * @file SQLiteDatabase.cpp
+ * @author Daniel Mierswa <daniel.mierswa@student.hs-rm.de>
+ *
+ * Implementation file for the SQLite3 implementation for the Database interface.
+ */
+
 namespace database_errors
 {
 	SQLiteError::SQLiteError(std::string const &message)
