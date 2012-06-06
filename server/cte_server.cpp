@@ -22,7 +22,7 @@ int main(int argc, char **argv)
 	{ network_interface.listen(); }
 #endif
 
-	SQLiteDatabase sqlite_db = SQLiteDatabase::from_path("db.sql");
+	SQLiteDatabase sqlite_db = SQLiteDatabase::from_path("./db.sql");
 
 	return EXIT_SUCCESS;
 }
