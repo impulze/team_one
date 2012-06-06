@@ -1,0 +1,3 @@
+*.o
+/Server
+/tests/Server
