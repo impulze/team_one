@@ -57,6 +57,9 @@ BOOST_AUTO_TEST_CASE(construction)
 	BOOST_CHECK_EXCEPTION(
 		SQLiteDatabase::from_path("invalid"), std::runtime_error,
 		stub_predicate);
+	BOOST_CHECK_EXCEPTION(
+		SQLiteDatabase::from_path("-"), std::runtime_error,
+		stub_predicate);
 }
 
 BOOST_AUTO_TEST_CASE(sql_complete)
