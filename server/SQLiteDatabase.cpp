@@ -151,9 +151,11 @@ namespace
 			// every column should have a non-NULL name
 			assert(column_names[i]);
 
+			// create a mapping from column name to result string
 			result[column_names[i]] = column_results[i];
 		}
 
+		// obtain a reference to the passed output results
 		Database::results_t &results =
 			*static_cast<Database::results_t *>(results_ptr);
 
