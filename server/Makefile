@@ -9,7 +9,7 @@ OBJS = Database.o SQLiteDatabase.o
 OBJS += ClientCollection.o Client.o
 OBJS += Message.o NetworkInterface.o
 
-TEST_OBJS += tests/SQLiteDatabase.o tests/cte_server.o
+TEST_OBJS += tests/Database.o tests/SQLiteDatabase.o tests/cte_server.o
 
 BIN_OBJS = $(OBJS) cte_server.o
 BIN_SRCS = $(BIN_OBJS:%.o=%.cpp)
