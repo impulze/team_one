@@ -10,6 +10,8 @@
 #include <cstdint> // uint*_t
 #include <vector>
 
+#include "ClientCollection.h"
+
 class Client;
 
 class Message
@@ -52,15 +54,21 @@ class Message
 		uint32_t		 	id;
 		std::vector<char>	name;
 		uint64_t			position;
+		ClientSptr			source;
 		MessageType	 	 	type;
+
+		Message(void);
+		Message(const Message &) = delete;
+
+		Message operator=(const Message &) = delete;
 		
 		/**
-			Attempts to generate a new Message by reading a bytestream sent by the given client.
+			Attempts to parse a bytestream sent by the given client to this Message object.
 				client
-			=#	client.receive
 			=#	Exception::InvalidMessageType - if the message has an invalid type
+			=#	client.receive
 		**/
-		Message(Client &client);
+		void receive_from(ClientSptr client);
 };
 
 #endif

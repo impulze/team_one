@@ -11,7 +11,7 @@
 #include "exceptions.h"
 
 Client::Client(int listener):
-	active_document(0), cursor(0), socket(::accept(listener, 0, 0)), user_id(0)
+	active_document(0), cursor(0), socket(accept(listener, 0, 0)), user_id(0)
 {
 	// check if a client was accepted
 	if (this->socket == -1)

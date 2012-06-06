@@ -4,20 +4,50 @@
 	created: Thursday, 24th May 2012
 **/
 
+#include <sys/select.h>
 #include "exceptions.h"
 #include "Client.h"
 #include "ClientCollection.h"
 
-Client &ClientCollection::add_client(int socket)
+Client &ClientCollection::accept_client(int listener)
 {
-	// check if there is already a client assigned to the given socket
-	if (this->clients.find(socket) != this->clients.end())
-	{ throw Exception::ClientAlreadyAdded("client already added"); }
-	
-	// create the client object and assign it to the given socket
-	// FIXME: get user_id
-	ClientSptr client(new Client(socket));
-	this->clients[socket] = const_cast<ClientSptr&>(client);
+	ClientSptr client(new Client(listener));
+	this->clients[client->socket] = client;
 	
 	return *client;
+}
+
+int ClientCollection::fill_fd_set(fd_set *set) const
+{
+	int end = 0;
+	
+	for (const std::pair<int, ClientSptr> &client: this->clients)
+	{
+		FD_SET(client.first, set);
+		end = std::max(end, client.first);
+	}
+	
+	return end;
+}
+
+MessageList &ClientCollection::get_messages_by_fd_set(fd_set *set, int fd_max, MessageList &list)
+{
+	MessageList::iterator message = list.begin();
+
+	// iterate through all fds in the set and handle the set ones
+	for (int fd = 0; fd < fd_max; ++fd)
+	{
+		// ignore unset
+		if (!FD_ISSET(fd, set))
+		{ continue; }
+
+		// read message from set
+		message->receive_from(clients[fd]);
+
+		// break if the list is full
+		if (++message == list.end())
+		{ break; }
+	}
+
+	return list;
 }

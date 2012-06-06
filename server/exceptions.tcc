@@ -7,6 +7,8 @@
 #ifndef _EXCEPTIONS_TCC_
 #define _EXCEPTIONS_TCC_
 
+#include "errno.h"
+
 template<typename T>
 Exception::ClientAlreadyAdded::ClientAlreadyAdded(T msg):
 	std::invalid_argument(msg)
@@ -18,8 +20,13 @@ Exception::ErrnoError::ErrnoError(T msg, int error, const char *function):
 {}
 
 template<typename T>
-Exception::InvalidMessageType::InvalidMessageType(T msg, Message::MessageType type):
-	std::runtime_error(msg), type(type)
+Exception::ErrnoError::ErrnoError(T msg, const char *function):
+	ErrnoError(msg, errno, function)
+{}
+
+template<typename T>
+Exception::InvalidMessageType::InvalidMessageType(T msg, Message::MessageType type, int socket):
+	std::runtime_error(msg), socket(socket), type(type)
 {}
 
 #endif

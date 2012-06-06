@@ -7,7 +7,7 @@ BOOST_UTF_CXXFLAGS = -I/usr/include/boost/
 LDLIBS += -lsqlite3
 
 OBJS = Database.o SQLiteDatabase.o
-OBJS += ClientCollection.o Client.o MainNetworkEventHandler.o
+OBJS += ClientCollection.o Client.o
 OBJS += Message.o NetworkInterface.o
 
 TEST_OBJS += tests/SQLiteDatabase.o tests/cte_server.o
@@ -20,7 +20,7 @@ TEST_BIN_OBJS = $(OBJS) $(TEST_OBJS) tests/cte_server.o
 TEST_BIN_SRCS = $(TEST_BIN_OBJS:%.o=%.cpp)
 TEST_BIN_DEPS = $(TEST_BIN_OBJS:%=deps/%)
 
-all: Server tests/Server
+all: Server
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -MM -MT $@ $< > deps/$@
