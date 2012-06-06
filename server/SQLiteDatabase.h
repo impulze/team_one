@@ -89,6 +89,14 @@ public:
 
 	bool complete_sql(std::string const &statement) const;
 
+	/**
+	 * Execute one SQL query.
+	 *
+	 * @param statement The statement to execute. The allowed and correct syntax can
+	 *                  be found here: http://www.sqlite.org/lang.html
+	 * @throws database_errors::Failure Thrown if any failure occurs during execution.
+	 * @return The results of the passed SQL query.
+	 */
 	results_t execute_sql(std::string const &statement);
 
 private:
