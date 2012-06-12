@@ -23,7 +23,7 @@ public:
 	 * @param name The name the document is referenced by.
 	 * @param overwrite Allow overwriting if the document exists.
 	 */
-	explicit Document(std::string const &name, bool overwrite);
+	explicit Document(std::string const &name, bool overwrite = false);
 
 	/**
 	 * Remove the document physically.
