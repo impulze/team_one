@@ -228,33 +228,3 @@ catch (...)
 	instance_.reset();
 	throw;
 }
-
-#if 0
-std::string NCursesUserInterface::get_input()
-{
-	char * const line = ::readline("> ");
-
-	if (!line)
-	{
-		throw std::runtime_error("error getting user input");
-	}
-
-	std::string line_string;
-
-	// make sure resources are freed
-	try
-	{
-		line_string = line;
-		::free(line);
-	}
-
-	catch (...)
-	{
-		::free(line);
-		throw;
-	}
-
-	return line_string;
-}
-#endif
-
