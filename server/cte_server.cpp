@@ -10,6 +10,7 @@
 
 #include <cstdlib>
 #include <iostream>
+#include <sstream>
 
 int main(int argc, char **argv)
 {
@@ -28,16 +29,59 @@ int main(int argc, char **argv)
 
 	NCursesUserInterface &ncurses_ui = NCursesUserInterface::get_instance();
 
-	for (;;)
-	{
-		std::wstring const line = ncurses_ui.get_line();
+	typedef NCursesUserInterface::command_arguments_t command_arguments_t;
 
-		if (line == L"quit")
+	struct Processor
+	{
+		void add(command_arguments_t const &parameters)
 		{
-			break;
+			std::wostringstream strm;
+
+			for (auto const &parameter: parameters)
+			{
+				strm << parameter << ' ';
+			}
+
+			ncurses_ui.printf("adding user: <%ls>\n", strm.str().c_str());
 		}
 
-		ncurses_ui.printf("%ls\n", line.c_str());
+		void del(command_arguments_t const &parameters)
+		{
+			std::wostringstream strm;
+
+			for (auto const &parameter: parameters)
+			{
+				strm << parameter << ' ';
+			}
+
+			ncurses_ui.printf("adding user: <%ls>\n", strm.str().c_str());
+		}
+
+		void quit(command_arguments_t const &)
+		{
+			// ignore parameters
+			wants_running = false;
+		}
+
+		NCursesUserInterface &ncurses_ui;
+		bool wants_running;
+	} processor = { ncurses_ui, true };
+
+	using std::placeholders::_1;
+
+	ncurses_ui.register_processor(
+		L"adduser",
+		std::bind(&Processor::add, &processor, _1));
+	ncurses_ui.register_processor(
+		L"deluser",
+		std::bind(&Processor::del, &processor, _1));
+	ncurses_ui.register_processor(
+		L"quit",
+		std::bind(&Processor::quit, &processor, _1));
+
+	while (processor.wants_running)
+	{
+		ncurses_ui.run();
 	}
 
 	return EXIT_SUCCESS;

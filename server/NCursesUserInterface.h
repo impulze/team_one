@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 
 /**
  * @file NCursesUserInterface.h
@@ -68,17 +69,29 @@ public:
 	 */
 	static NCursesUserInterface &get_instance();
 
-	std::wstring get_line();
+	void run();
+
+	void register_processor(std::wstring const &command,
+	                        command_processor_t const &function);
 
 	template <class... T>
 	void printf(std::string const &format, T &&... args);
 
 private:
+	/**
+	 * Process a line (command input) after the interface successfully
+	 * obtained a line of input.
+	 * This will eventually call the registered command processor if
+	 * the command matches.
+	 */
+	void process_line();
+
 	static std::unique_ptr<NCursesUserInterface> instance_;
 	SCREEN *screen_;
 	WINDOW *input_window_;
 	std::wstring current_line_;
 	std::wstring::size_type current_position_;
+	std::unordered_map<std::wstring, command_processor_t> command_processors_;
 };
 
 #include "NCursesUserInterface.tcc"

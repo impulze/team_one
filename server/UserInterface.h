@@ -1,8 +1,10 @@
 #ifndef USERINTERFACE_H_INCLUDED
 #define USERINTERFACE_H_INCLUDED
 
+#include <functional>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 /**
  * @file UserInterface.h
@@ -36,6 +38,9 @@ namespace userinterface_errors
 class UserInterface
 {
 public:
+	typedef std::vector<std::wstring> command_arguments_t;
+	typedef std::function<void(command_arguments_t const &)> command_processor_t;
+
 	/**
 	 * Construct a user command line interface object.
 	 * Provide a default constructor, because this is just an interface.
@@ -61,12 +66,28 @@ public:
 	UserInterface &operator=(UserInterface const &) = delete;
 
 	/**
-	 * Run the processing loop and return the entered line.
+	 * Run the processing loop as in obtain user input and call the registered
+	 * processors.
+	 * The function returns if a line was entered and the specified callback
+	 * was called.
 	 *
 	 * @throws std::runtime_error If processing failed in such a way
 	 *                            that a restart of the program is required.
 	 */
-	virtual std::wstring get_line() = 0;
+	virtual void run() = 0;
+
+	/**
+	 * Register a processor for a specific command entered.
+	 * If the string is entered by the user the processor is called with the
+	 * parameters the user passed.
+	 *
+	 * @param command The name of the command.
+	 * @param function The processor that is executed for this command.
+	 *
+	 * @throws InvalidCommandError Thrown if the command includes whitespace.
+	 */
+	virtual void register_processor(std::wstring const &command,
+	                                command_processor_t const &function) = 0;
 };
 
 #endif
