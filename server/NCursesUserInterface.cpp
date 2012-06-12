@@ -16,9 +16,24 @@
 
 std::unique_ptr<NCursesUserInterface> NCursesUserInterface::instance_;
 
+namespace userinterface_errors
+{
+	NCursesError::NCursesError(std::string const &message)
+		: Failure(message)
+	{
+	}
+
+	InvalidCommandError::InvalidCommandError(std::string const &message)
+		: Failure(message)
+	{
+	}
+}
+
 NCursesUserInterface::NCursesUserInterface()
 	: current_position_(0)
 {
+	using userinterface_errors::NCursesError;
+
 	/**
 	 * NCursesFree is a class which only exists to free the resources
 	 * allocated by ncurses in this scope.
@@ -58,7 +73,7 @@ NCursesUserInterface::NCursesUserInterface()
 
 	if (!screen_ || cbreak() == ERR)
 	{
-		throw std::runtime_error("failed to initialize ncurses");
+		throw NCursesError("failed to initialize ncurses");
 	}
 
 	assert(noecho() == OK); // only fails if no active screen
@@ -66,20 +81,20 @@ NCursesUserInterface::NCursesUserInterface()
 
 	if (keypad(stdscr, TRUE) == ERR)
 	{
-		throw std::runtime_error("failed to enable keypad support");
+		throw NCursesError("failed to enable keypad support");
 	}
 
 	// screen region is one line short because of input window
 	if (setscrreg(0, LINES - 1) == ERR)
 	{
-		throw std::runtime_error("failed to set screen region");
+		throw NCursesError("failed to set screen region");
 	}
 
 	input_window_ = subwin(stdscr, 1, COLS, LINES - 1, 0);
 
 	if (!input_window_)
 	{
-		throw std::runtime_error("failed to initialize input ncurses window");
+		throw NCursesError("failed to initialize input ncurses window");
 	}
 
 	assert(scrollok(stdscr, TRUE) == OK); // only fails if no active window
@@ -88,12 +103,12 @@ NCursesUserInterface::NCursesUserInterface()
 
 	if ((idlok(stdscr, TRUE) == ERR) || (idlok(input_window_, TRUE) == ERR))
 	{
-		throw std::runtime_error("failed to initialize hardware insert/delete line");
+		throw NCursesError("failed to initialize hardware insert/delete line");
 	}
 
 	if (refresh() == ERR)
 	{
-		throw std::runtime_error("failed to refresh window");
+		throw NCursesError("failed to refresh window");
 	}
 
 	ncurses_free_object.needs_free = false;
@@ -118,6 +133,8 @@ NCursesUserInterface &NCursesUserInterface::get_instance()
 std::wstring NCursesUserInterface::get_line()
 try
 {
+	using userinterface_errors::NCursesError;
+
 	for (;;)
 	{
 		wnoutrefresh(input_window_);
@@ -127,7 +144,7 @@ try
 
 		if (get_wch(&input) == ERR)
 		{
-			throw std::runtime_error("fetching user input failed");
+			throw NCursesError("fetching user input failed");
 		}
 
 		switch (input)

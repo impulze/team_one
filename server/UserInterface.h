@@ -1,6 +1,7 @@
 #ifndef USERINTERFACE_H_INCLUDED
 #define USERINTERFACE_H_INCLUDED
 
+#include <stdexcept>
 #include <string>
 
 /**
@@ -11,6 +12,26 @@
  * One should be able to wait for input and retrieve what was typed
  * in.
  */
+
+namespace userinterface_errors
+{
+	/**
+	 * A generic user interface exception.
+	 * Specific errors derive from this class to create
+	 * an exception hierarchy.
+	 */
+	struct Failure
+		: std::runtime_error
+	{
+		/**
+		 * Construct a new user interface failure with a specific
+		 * error message.
+		 *
+		 * @param message The error message that describes the error.
+		 */
+		Failure(std::string const &message);
+	};
+}
 
 class UserInterface
 {

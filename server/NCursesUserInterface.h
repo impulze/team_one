@@ -15,6 +15,36 @@
  * NCurses implementation for the user command line interface.
  */
 
+namespace userinterface_errors
+{
+	/**
+	 * A generic user interface exception of the NCurses implementation.
+	 * Specific errors derive from this class to create
+	 * an exception hierarchy.
+	 */
+	struct NCursesError
+		: Failure
+	{
+		/**
+		 * Construct a new NCurses failure with a specific
+		 * error message.
+		 *
+		 * @param message The error message that describes the error.
+		 */
+		NCursesError(std::string const &message);
+	};
+
+	/**
+	 * Represent an error which happens if a command was passed that contains
+	 * whitespace.
+	 */
+	struct InvalidCommandError
+		: Failure
+	{
+		InvalidCommandError(std::string const &message);
+	};
+}
+
 class NCursesUserInterface
 	: public UserInterface
 {
