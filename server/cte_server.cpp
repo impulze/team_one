@@ -6,8 +6,10 @@
 
 #include "NetworkInterface.h"
 #include "SQLiteDatabase.h"
+#include "NCursesUserInterface.h"
 
 #include <cstdlib>
+#include <iostream>
 
 int main(int argc, char **argv)
 {
@@ -23,6 +25,20 @@ int main(int argc, char **argv)
 #endif
 
 	SQLiteDatabase sqlite_db = SQLiteDatabase::from_path("./db.sql");
+
+	NCursesUserInterface &ncurses_ui = NCursesUserInterface::get_instance();
+
+	for (;;)
+	{
+		std::wstring const line = ncurses_ui.get_line();
+
+		if (line == L"quit")
+		{
+			break;
+		}
+
+		ncurses_ui.printf("%ls\n", line.c_str());
+	}
 
 	return EXIT_SUCCESS;
 }

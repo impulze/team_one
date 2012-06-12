@@ -40,13 +40,12 @@ public:
 	UserInterface &operator=(UserInterface const &) = delete;
 
 	/**
-	 * Obtain one line of input. Block until it's received.
+	 * Run the processing loop and return the entered line.
 	 *
-	 * @return The line of input which was typed with newline removed.
-	 * @throws std::runtime_error If processing in the underlying
-	 *                            implementation failed.
+	 * @throws std::runtime_error If processing failed in such a way
+	 *                            that a restart of the program is required.
 	 */
-	virtual std::string get_input() = 0;
+	virtual std::wstring get_line() = 0;
 };
 
 #endif

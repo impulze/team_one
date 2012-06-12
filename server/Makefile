@@ -1,13 +1,15 @@
 CXX = clang++ -std=c++11
 
 CXXFLAGS += -Wall -Wextra
+CXXFLAGS += $(shell ncursesw5-config --cflags)
 LINK.o = $(CXX) $(LDFLAGS) $(TARGET_ARCH)
 
-LDLIBS += -lsqlite3
+LDLIBS += -lsqlite3 $(shell ncursesw5-config --libs)
 
 OBJS = Database.o SQLiteDatabase.o
 OBJS += ClientCollection.o Client.o
 OBJS += Message.o NetworkInterface.o
+OBJS += UserInterface.o NCursesUserInterface.o
 
 TEST_OBJS += tests/Database.o tests/SQLiteDatabase.o tests/cte_server.o
 
