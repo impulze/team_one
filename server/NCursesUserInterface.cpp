@@ -82,7 +82,14 @@ NCursesUserInterface::NCursesUserInterface()
 		throw std::runtime_error("failed to initialize input ncurses window");
 	}
 
+	assert(scrollok(stdscr, TRUE) == OK); // only fails if no active window
 	assert(scrollok(input_window_, TRUE) == OK); // only fails if no active window
+
+
+	if ((idlok(stdscr, TRUE) == ERR) || (idlok(input_window_, TRUE) == ERR))
+	{
+		throw std::runtime_error("failed to initialize hardware insert/delete line");
+	}
 
 	if (refresh() == ERR)
 	{
@@ -152,6 +159,12 @@ try
 				wclrtoeol(input_window_);
 				mvwprintw(input_window_, 0, 0, "%ls", current_line_.c_str());
 				wmove(input_window_, 0, current_position_);
+
+				break;
+
+			case KEY_UP:
+			case KEY_DOWN:
+				// ignore key up/down
 
 				break;
 
