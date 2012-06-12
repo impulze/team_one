@@ -17,6 +17,15 @@ Client &ClientCollection::accept_client(int listener)
 	return *client;
 }
 
+void ClientCollection::broadcast(const std::vector<char> &bytestream) const
+{
+	for (const std::pair<int, ClientSptr> &client: clients)
+	{
+		// TODO: add try-catch
+		client.second->send(bytestream);
+	}
+}
+
 int ClientCollection::fill_fd_set(fd_set *set) const
 {
 	int end = 0;

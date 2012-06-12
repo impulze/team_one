@@ -24,5 +24,5 @@ Client::~Client(void)
 	close(this->socket);
 }
 
-void Client::send(std::vector<char> &bytes)
+void Client::send(const std::vector<char> &bytes) const
 {}

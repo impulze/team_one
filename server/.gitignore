@@ -1,1 +1,3 @@
 /config.mk
+*.o
+*.swp

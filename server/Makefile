@@ -8,6 +8,7 @@ LDLIBS += -lsqlite3
 OBJS = Database.o SQLiteDatabase.o
 OBJS += ClientCollection.o Client.o
 OBJS += Message.o NetworkInterface.o
+OBJS += main_network_message_handler.o
 
 TEST_OBJS += tests/SQLiteDatabase.o tests/cte_server.o
 
