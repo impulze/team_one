@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <sstream>
 #include <stdexcept>
+#include <iostream>
 
 /**
  * @file NCursesUserInterface.cpp
@@ -44,7 +45,8 @@ NCursesUserInterface::NCursesUserInterface()
 	{
 		NCursesFree()
 			: needs_free(true),
-			  screen(0)
+			  screen(0),
+			  input_window(0)
 		{
 		}
 
@@ -55,16 +57,22 @@ NCursesUserInterface::NCursesUserInterface()
 				return;
 			}
 
+			if (input_window)
+			{
+				delwin(input_window);
+			}
+
+			endwin();
+
 			if (screen)
 			{
 				delscreen(screen);
 			}
-
-			endwin();
 		}
 
 		bool needs_free;
 		SCREEN *screen;
+		WINDOW *input_window;
 	};
 
 	NCursesFree ncurses_free_object;
@@ -90,7 +98,7 @@ NCursesUserInterface::NCursesUserInterface()
 		throw NCursesError("failed to set screen region");
 	}
 
-	input_window_ = subwin(stdscr, 1, COLS, LINES - 1, 0);
+	input_window_ = ncurses_free_object.input_window = subwin(stdscr, 1, COLS, LINES - 1, 0);
 
 	if (!input_window_)
 	{
@@ -116,6 +124,7 @@ NCursesUserInterface::NCursesUserInterface()
 
 NCursesUserInterface::~NCursesUserInterface()
 {
+	delwin(input_window_);
 	endwin();
 	delscreen(screen_);
 }
