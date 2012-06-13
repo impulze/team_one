@@ -36,6 +36,12 @@ NetworkInterface::NetworkInterface(int port, int backlog)
 	{ throw Exception::ErrnoError("failed to listen", "listen"); }
 }
 
+void NetworkInterface::add_message_handler(const NetworkMessageHandler handler)
+{ message_handlers.push_front(handler); }
+
+void NetworkInterface::remove_message_handler(const NetworkMessageHandler handler)
+{ message_handlers.remove(handler); }
+
 void NetworkInterface::run(void)
 {
 	// generate fd_set
@@ -66,7 +72,7 @@ void NetworkInterface::run(void)
 	for (const Message &message: messages)
 	{
 		// skip if message is empty or invalid
-		if (message.source == 0 || message.type == Message::TYPE_INVALID)
+		if (message.is_empty() || message.type == Message::TYPE_INVALID)
 		{ continue; }
 		
 		// trigger events for all event handlers

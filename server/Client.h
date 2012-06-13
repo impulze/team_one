@@ -19,7 +19,8 @@ class Client
 		uint32_t	user_id;
 
 		/*
-			Uses the specified listening socket to accept a new incoming client connection. Therefore it uses the low-level function accept (sys/socket.h).
+			Uses the specified listening socket to accept a new incoming client connection.
+			Therefore it uses the low-level function accept (sys/socket.h).
 				listener - listening socket
 			=#	Exception::ErrnoException - if accept fails
 		*/
@@ -30,8 +31,8 @@ class Client
 		~Client(void);
 
 		template<typename T>
-		void receive(T *destination, uint64_t size);
-		void send(std::vector<char> &bytes);
+		void receive(T *destination, uint64_t size) const;
+		void send(const std::vector<char> &bytes) const;
 };
 
 #include "Client.tcc"

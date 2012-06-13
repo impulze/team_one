@@ -9,6 +9,7 @@
 
 #include <forward_list>
 #include <memory>
+#include <sys/select.h>
 #include <unordered_map>
 
 class Client;
@@ -27,13 +28,27 @@ class ClientCollection
 			=#	Client::Client
 		**/
 		Client &accept_client(int listener);
-		
+		/**
+			Sends the given bytestream to all clients of this ClientCollection.
+				bytestream
+			=#	Client::send(std::vector<char>)
+		**/
+		void broadcast(const std::vector<char> &bytestream) const;
 		/**
 			Adds all clients' sockets to the given fd_set using the makro FD_SET.
 				set
 			=>	client socket with the highest integral value of all added sockets
 		**/
 		int fill_fd_set(fd_set *set) const;
+		/**
+			Collects the oldest unread message in the queue from each socket that's set as readable
+			in the fd_set. Each of those has to be one of a currently connected Client. Stores all
+			received messages in the given MessageList.
+				set
+				fd_max -> <sys/select.h> select(nfds)
+				dest
+			=>	`dest`
+		**/
 		MessageList &get_messages_by_fd_set(fd_set *set, int fd_max, MessageList &dest);
 		
 	private:

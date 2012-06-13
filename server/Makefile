@@ -11,6 +11,7 @@ OBJS += ClientCollection.o Client.o
 OBJS += Message.o NetworkInterface.o
 OBJS += UserInterface.o NCursesUserInterface.o
 OBJS += Document.o User.o
+OBJS += main_network_message_handler.o
 
 TEST_OBJS += tests/Database.o tests/SQLiteDatabase.o tests/cte_server.o
 

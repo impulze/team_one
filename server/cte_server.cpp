@@ -4,6 +4,8 @@
 	created: Wednesday, 23rd May 2012
 **/
 
+// TODO write getters and setters for Message data
+
 #include "NetworkInterface.h"
 #include "SQLiteDatabase.h"
 #include "NCursesUserInterface.h"
@@ -12,18 +14,17 @@
 #include <iostream>
 #include <sstream>
 
+class Message;
+extern void main_network_message_handler(const Message &);
+
 int main(int argc, char **argv)
 {
 	NetworkInterface network_interface(1337);
 	
-	// FIXME: add_event_handler doesn't exist
-	//network_interface.add_event_handler(&main_handler);
+	network_interface.add_message_handler(&main_network_message_handler);
 	
-	// FIXME: no listen() in NetworkInterface
-#if 0
 	while (1)
-	{ network_interface.listen(); }
-#endif
+	{ network_interface.run(); }
 
 	SQLiteDatabase sqlite_db = SQLiteDatabase::from_path("./db.sql");
 

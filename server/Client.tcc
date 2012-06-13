@@ -11,7 +11,7 @@
 #include "exceptions.h"
 
 template<typename T>
-void Client::receive(T *destination, uint64_t size)
+void Client::receive(T *destination, uint64_t size) const
 {
 	uint64_t read_size = 0;
 	while (read_size < size)

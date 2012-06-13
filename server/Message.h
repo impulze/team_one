@@ -19,24 +19,37 @@ class Message
 	public:
 		enum MessageStatus
 		{
-			STATUS_OK
+			STATUS_OK, // success
+			STATUS_OK_CONTENTS_FOLLOWING, // multibyte message with doc contents following
+			STATUS_DOC_ALREADY_EXIST, // doc does already exist
+			STATUS_DOC_NOT_EXIST, // doc does not exist
+			STATUS_DOC_SAVED, // doc was saved by another user
+			STATUS_USER_NOT_EXIST, // username does not exist
+			STATUS_USER_WRONG_PASSWORD, // password is wrong
+			STATUS_USER_NO_ACTIVE_DOC, // user has no active doc
+			STATUS_USER_CURSOR_UNKNOWN, // user cursor position is unknown
+			STATUS_USER_CURSOR_OUT_OF_BOUNDS, // user cursor position is out of bounds
+			STATUS_USER_LENGTH_TOO_LONG, // specified length is too long
+			STATUS_NOT_OK // anything but success
 		};
 		enum MessageType
 		{
-			TYPE_INVALID,
-			TYPE_DOC_ACTIVATE,
-			TYPE_DOC_CREATE,
-			TYPE_DOC_DELETE,
-			TYPE_DOC_OPEN,
-			TYPE_DOC_SAVE,
-			TYPE_SYNC_BYTE,
-			TYPE_SYNC_CURSOR,
-			TYPE_SYNC_DELETION,
-			TYPE_SYNC_MULTIBYTE,
-			TYPE_USER_LOGIN,
-			TYPE_USER_LOGOUT,
-			TYPE_USER_JOIN,
-			TYPE_USER_QUIT
+			TYPE_INVALID, // invalid message type
+			TYPE_DOC_ACTIVATE, // user activates/switches to doc (id, hash)
+			TYPE_DOC_CREATE, // user creates doc (name)
+			TYPE_DOC_DELETE, // user deletes doc (name)
+			TYPE_DOC_OPEN, // user opens doc (name)
+			TYPE_DOC_SAVE, // user saves doc (id)
+			TYPE_STATUS, // server -> client only (general status announcement)
+			TYPE_SYNC_BYTE, // user sends byte to insert at current pos (byte)
+			TYPE_SYNC_CURSOR, // user sends new cursor position (position)
+			TYPE_SYNC_DELETION, // user sends deletion (position, length)
+			TYPE_SYNC_MULTIBYTE, // user sends byte sequence to insert at current position (length,
+								 // payload)
+			TYPE_USER_LOGIN, // user sends login credentials (name, hash)
+			TYPE_USER_LOGOUT, // user logs out
+			TYPE_USER_JOIN, // server -> client only (a new user connected)
+			TYPE_USER_QUIT // server -> client only (a user disconnected)
 		};
 		
 		const uint64_t
@@ -45,6 +58,7 @@ class Message
 			FIELD_SIZE_DOC_NAME = 128,
 			FIELD_SIZE_HASH = 20,
 			FIELD_SIZE_SIZE = 8,
+			FIELD_SIZE_STATUS = 1,
 			FIELD_SIZE_TYPE = 1,
 			FIELD_SIZE_USER_NAME = 64;
 		
@@ -55,6 +69,7 @@ class Message
 		std::vector<char>	name;
 		uint64_t			position;
 		ClientSptr			source;
+		MessageStatus		status;
 		MessageType	 	 	type;
 
 		Message(void);
@@ -62,6 +77,7 @@ class Message
 
 		Message operator=(const Message &) = delete;
 		
+		inline bool is_empty() const;
 		/**
 			Attempts to parse a bytestream sent by the given client to this Message object.
 				client
@@ -69,6 +85,36 @@ class Message
 			=#	client.receive
 		**/
 		void receive_from(ClientSptr client);
+		/**
+			Attempts to send a raw byte sequence representation of this Message to the specified
+			Client.
+				client
+			=#	Client::send(std::vector<char> &)
+		**/
+		void send_to(Client &client) const;
+		/**
+			Like send_to(ClientSptr), but sends to all Clients in the given ClientCollection.
+				clients
+			=#	ClientCollection::broadcast(std::vector<char> &)
+		**/
+		void send_to(ClientCollection &clients) const;
+	
+	private:
+		template<typename T>
+		static inline void append_bytes(std::vector<char> &dest, const T *src, size_t length = 0);
+		template<typename T>
+		static inline void append_bytes(std::vector<char> &dest, const T src, size_t length = 0);
+		static inline uint64_t htonll(uint64_t hostlonglong);
+		static inline uint64_t ntohll(uint64_t netlonglong);
+
+		/**
+			Generates a bytesteam from this Message that can be sent to one or more Clients.
+				dest - vector to store the bytestream in
+			=>	`dest`
+		**/
+		std::vector<char> &generate_bytestream(std::vector<char> &dest) const;
 };
+
+#include "Message.tcc"
 
 #endif
