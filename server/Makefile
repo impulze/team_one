@@ -2,9 +2,12 @@ CXX = clang++ -std=c++11
 
 CXXFLAGS += -Wall -Wextra
 CXXFLAGS += $(shell ncursesw5-config --cflags)
+CXXFLAGS += $(shell pkg-config --cflags openssl)
 LINK.o = $(CXX) $(LDFLAGS) $(TARGET_ARCH)
 
-LDLIBS += -lsqlite3 $(shell ncursesw5-config --libs)
+LDLIBS += -lsqlite3
+LDLIBS += $(shell ncursesw5-config --libs)
+LDLIBS += $(shell pkg-config --libs openssl)
 
 OBJS = Database.o SQLiteDatabase.o
 OBJS += ClientCollection.o Client.o
