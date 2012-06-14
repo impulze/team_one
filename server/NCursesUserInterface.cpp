@@ -237,11 +237,13 @@ try
 				break;
 
 			case KEY_END:
+				current_position_ = current_line_.length();
 				wmove(input_window_, 0, current_line_.length());
 
 				break;
 
 			case KEY_HOME:
+				current_position_ = 0;
 				wmove(input_window_, 0, 0);
 
 				break;
