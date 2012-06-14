@@ -1,21 +1,34 @@
-#ifndef USER_H_INCLUDED
-#define USER_H_INCLUDED
+#ifndef USERDATABASE_H_INCLUDED
+#define USERDATABASE_H_INCLUDED
+
+#include "Database.h"
 
 #include <array>
+#include <memory>
 #include <string>
 #include <vector>
 
 /**
- * @file User.h
+ * @file UserDatabase.h
  * @author Daniel Mierswa <daniel.mierswa@student.hs-rm.de>
  *
  * Interface and common symbols for the user implementation.
+ * Basically this is just an object that interacts with a
+ * database and provides mechanisms to create and remove users
+ * and to check the credentials for users.
  */
 
-class User
+class UserDatabase
 {
 public:
-	typedef std::array<char, 20> password_hash_t;
+	typedef std::array<unsigned char, 20> password_hash_t;
+
+	/**
+	 * Construct the user database.
+	 *
+	 * @param database A shared database handle.
+	 */
+	UserDatabase(std::shared_ptr<Database> database);
 
 	/**
 	 * Check credentials of a user.
@@ -23,7 +36,7 @@ public:
 	 * @param name The name the user is referenced by.
 	 * @param password_hash The password SHA-1 hash that was generated.
 	 */
-	static void check(std::string const &name, password_hash_t const &password_hash);
+	void check(std::string const &name, password_hash_t const &password_hash);
 
 	/**
 	 * Create a user in the database with the specified name and password hash.
@@ -32,14 +45,14 @@ public:
 	 * @param name The name the user is referenced by.
 	 * @param password_hash The password SHA-1 hash that was generated.
 	 */
-	static void create(std::string const &name, password_hash_t const &password_hash);
+	void create(std::string const &name, password_hash_t const &password_hash);
 
 	/**
 	 * Delete a user in the database with the specified name.
 	 *
 	 * @param Name The name the user is referenced by.
 	 */
-	static void remove(std::string const &name);
+	void remove(std::string const &name);
 
 	/**
 	 * Create a hash for the specificied byte sequence.
@@ -47,7 +60,10 @@ public:
 	 * @param bytes A sequence of bytes as data input for the hash algorithm.
 	 * @return The hash sequence for the specified bytes.
 	 */
-	static password_hash_t hash_bytes(std::vector<char> const &bytes);
+	password_hash_t hash_bytes(std::vector<char> const &bytes);
+
+private:
+	std::shared_ptr<Database> database_;
 };
 
 #endif
