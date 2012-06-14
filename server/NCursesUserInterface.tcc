@@ -11,8 +11,10 @@
 template <class... T>
 void NCursesUserInterface::printf(std::string const &format, T &&... args)
 {
+	mutex_.lock();
 	printw(format.c_str(), std::forward<T>(args)...);
 	refresh();
+	mutex_.unlock();
 }
 
 #endif

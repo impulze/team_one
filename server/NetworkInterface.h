@@ -50,7 +50,7 @@ class NetworkInterface
 			=#	Exception::ErrnoError - select failed
 			=#	ClientCollection::add_client
 		**/
-		void run(void);
+		void run(int ipc_socket);
 	
 	private:
 		ClientCollection							clients;
