@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <thread>
 #include <unordered_map>
 
 /**
@@ -92,6 +93,7 @@ private:
 	std::wstring current_line_;
 	std::wstring::size_type current_position_;
 	std::unordered_map<std::wstring, command_processor_t> command_processors_;
+	std::mutex mutex_;
 };
 
 #include "NCursesUserInterface.tcc"
