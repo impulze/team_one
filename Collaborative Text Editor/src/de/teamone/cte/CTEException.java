@@ -6,8 +6,10 @@ public class CTEException extends Exception
 	enum ExceptionType
 	{
 		UNKNOWN_EXCEPTION,
+		ALREADY_CONNECTED,
 		CONNECTION_FAILED,
 		INVALID_TYPE,
+		NOT_CONNECTED,
 		UNEXPECTED_EXCEPTION
 	}
 	
