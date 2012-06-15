@@ -131,15 +131,16 @@ public class NetworkInterface implements Runnable
 	 * @throws CTEException
 	 * 		if this NetworkInterface is not connected
 	 * 		see Message.send_to(WritableByteChannel) for further reasons
+	 * @throws IOException see Message.send_to(WritableByteChannel)
 	 */
 	public void sendMessage(Message message)
-	throws CTEException
+	throws CTEException, IOException
 	{
 		if (server == null)
 		{
 			throw new CTEException("not connected",
 				CTEException.ExceptionType.NOT_CONNECTED);
 		}
-		message.send_to(server);
+		message.sendTo(server);
 	}
 }

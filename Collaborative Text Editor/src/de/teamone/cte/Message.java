@@ -271,10 +271,13 @@ public class Message
 	 * Sends this message to the given channel.
 	 * @param channel
 	 * @throws CTEException - if the type is invalid
+	 * @throws IOException - if an error occurred while sending
 	 */
-	public void send_to(WritableByteChannel channel)
-	throws CTEException
+	public void sendTo(WritableByteChannel channel)
+	throws CTEException, IOException
 	{
+		byte[] nameBuffer;
+		
 		// initialize buffer
 		ByteBuffer buffer;
 		if (type == MessageType.TYPE_SYNC_MULTIBYTE)
@@ -295,9 +298,9 @@ public class Message
 		case TYPE_DOC_CREATE:
 		case TYPE_DOC_DELETE:
 		case TYPE_DOC_OPEN:
-			byte[] nameBytes = Arrays.copyOf(name.getBytes(), FIELD_SIZE_DOC_NAME);
-			Arrays.fill(nameBytes, name.length(), nameBytes.length, (byte)0x00);
-			buffer.put(nameBytes);
+			nameBuffer = Arrays.copyOf(name.getBytes(), FIELD_SIZE_DOC_NAME);
+			Arrays.fill(nameBuffer, name.length(), nameBuffer.length, (byte)0x00);
+			buffer.put(nameBuffer);
 			break;
 		case TYPE_DOC_LIST:
 		case TYPE_USER_LOGOUT:
@@ -305,17 +308,44 @@ public class Message
 		case TYPE_SYNC_BYTE:
 			buffer.put(bytes[0]);
 			break;
+		case TYPE_SYNC_CURSOR:
 		case TYPE_SYNC_DELETION:
 			buffer.putInt(position);
-			buffer.putInt(length);
 			break;
 		case TYPE_SYNC_MULTIBYTE:
 			buffer.putInt(length);
-			
+			buffer.put(bytes, 0, length);
+			break;
 		case TYPE_USER_LOGIN:
+			nameBuffer = Arrays.copyOf(name.getBytes(), FIELD_SIZE_USER_NAME);
+			Arrays.fill(nameBuffer, name.length(), nameBuffer.length, (byte)0x00);
+			buffer.put(nameBuffer);
+			break;
 		default:
 			throw new CTEException("invalid message type for sending",
 					CTEException.ExceptionType.INVALID_TYPE);
 		}
+		
+		// append second field
+		switch (type)
+		{
+		case TYPE_DOC_ACTIVATE:
+		case TYPE_USER_LOGIN:
+			if (bytes.length < FIELD_SIZE_HASH)
+			{ Arrays.fill(bytes, bytes.length, FIELD_SIZE_HASH, (byte)0x00); }
+			buffer.put(bytes, 0, FIELD_SIZE_HASH);
+			break;
+		case TYPE_SYNC_DELETION:
+			buffer.putInt(length);
+			break;
+		case TYPE_SYNC_MULTIBYTE:
+			if (bytes.length < length)
+			{ Arrays.fill(bytes, bytes.length, length, (byte)0x00); }
+			buffer.put(bytes, 0, length);
+			break;
+		}
+		
+		// send
+		channel.write(buffer);
 	}
 }
