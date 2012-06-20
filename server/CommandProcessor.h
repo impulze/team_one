@@ -14,14 +14,15 @@
  * you please.
  */
 
-class UserInterface;
+class UserDatabase;
 
 class CommandProcessor
 {
 public:
 	typedef UserInterface::command_arguments_t command_arguments_t;
 
-	CommandProcessor(UserInterface &user_interface);
+	CommandProcessor(UserInterface &user_interface,
+	                 UserDatabase &user_database);
 
 	void adduser(command_arguments_t const &);
 	void deluser(command_arguments_t const &);
@@ -34,6 +35,7 @@ public:
 
 private:
 	UserInterface &user_interface_;
+	UserDatabase &user_database_;
 	bool still_running_;
 	std::vector<UserInterface::command_processors_t::iterator> registered_processors_;
 };

@@ -1,10 +1,13 @@
 #include "CommandProcessor.h"
+#include "UserDatabase.h"
 
 #include <functional>
 #include <sstream>
 
-CommandProcessor::CommandProcessor(UserInterface &user_interface)
+CommandProcessor::CommandProcessor(UserInterface &user_interface,
+                                   UserDatabase &user_database)
 	: user_interface_(user_interface),
+	  user_database_(user_database),
 	  still_running_(true)
 {
 	using std::placeholders::_1;

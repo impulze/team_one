@@ -60,7 +60,7 @@ namespace
 	{
 		auto db = std::make_shared<SQLiteDatabase>(SQLiteDatabase::from_path("./db.sql"));
 		UserDatabase user_db(db, ui);
-		CommandProcessor command_processor(ui);
+		CommandProcessor command_processor(ui, user_db);
 		int ipc_sockets[2];
 
 		if (::socketpair(AF_UNIX, SOCK_STREAM, 0, ipc_sockets) == -1)
