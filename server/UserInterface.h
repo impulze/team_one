@@ -4,6 +4,7 @@
 #include <functional>
 #include <stdexcept>
 #include <string>
+#include <thread>
 #include <unordered_map>
 #include <vector>
 
@@ -55,9 +56,8 @@ public:
 
 	/**
 	 * Construct a user command line interface object.
-	 * Provide a default constructor, because this is just an interface.
 	 */
-	UserInterface() = default;
+	UserInterface();
 
 	/**
 	 * Deconstruct a user command line interface object, freeing all its resources
@@ -126,6 +126,19 @@ public:
 	 */
 	void quit();
 
+	/**
+	 * Check if the interface wasn't asked to quit.
+	 *
+	 * Initially (after construction) the interface is considered
+	 * to be running.
+	 *
+	 * return true If the user didn't invoke quit() yet, false otherwise.
+	 */
+	bool still_running() const
+	{
+		return still_running_;
+	}
+
 protected:
 	/**
 	 * Process a line (command input) after the interface successfully
@@ -154,6 +167,8 @@ private:
 	virtual void wait_for_key() = 0;
 
 	command_processors_t command_processors_;
+	bool still_running_;
+	std::mutex quit_mutex_;
 };
 
 #include "UserInterface.tcc"

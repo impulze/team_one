@@ -10,6 +10,7 @@ LDLIBS += $(shell ncursesw5-config --libs)
 LDLIBS += $(shell pkg-config --libs openssl)
 
 OBJS = Database.o SQLiteDatabase.o
+OBJS += CommandProcessor.o
 OBJS += ClientCollection.o Client.o
 OBJS += Message.o NetworkInterface.o
 OBJS += UserInterface.o NCursesUserInterface.o

@@ -23,6 +23,11 @@ namespace userinterface_errors
 	}
 }
 
+UserInterface::UserInterface()
+	: still_running_(true)
+{
+}
+
 UserInterface::~UserInterface()
 {
 }
@@ -53,8 +58,21 @@ void UserInterface::unregister_processor(command_processors_t::iterator iterator
 
 void UserInterface::quit()
 {
-	printf("Press any key to quit.");
-	wait_for_key();
+	quit_mutex_.lock();
+
+	try
+	{
+		printf("Press any key to quit.");
+		wait_for_key();
+		still_running_ = false;
+	}
+	catch (...)
+	{
+		quit_mutex_.unlock();
+		throw;
+	}
+
+	quit_mutex_.unlock();
 }
 
 void UserInterface::process_line()

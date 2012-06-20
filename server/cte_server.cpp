@@ -6,7 +6,7 @@
 
 // TODO write getters and setters for Message data
 
-#include "exceptions.h"
+#include "CommandProcessor.h"
 #include "NetworkInterface.h"
 #include "NCursesUserInterface.h"
 #include "SQLiteDatabase.h"
@@ -59,58 +59,8 @@ namespace
 	int main_ui(int argc, char **argv, UserInterface &ui)
 	{
 		auto db = std::make_shared<SQLiteDatabase>(SQLiteDatabase::from_path("./db.sql"));
-		UserDatabase user_db = UserDatabase(db, ui);
-
-		typedef NCursesUserInterface::command_arguments_t command_arguments_t;
-
-		struct Processor
-		{
-			void add(command_arguments_t const &parameters)
-			{
-				std::wostringstream strm;
-
-				for (auto const &parameter: parameters)
-				{
-					strm << parameter << ' ';
-				}
-
-				ui.printf("adding user: <%ls>\n", strm.str().c_str());
-			}
-
-			void del(command_arguments_t const &parameters)
-			{
-				std::wostringstream strm;
-
-				for (auto const &parameter: parameters)
-				{
-					strm << parameter << ' ';
-				}
-
-				ui.printf("adding user: <%ls>\n", strm.str().c_str());
-			}
-
-			void quit(command_arguments_t const &)
-			{
-				// ignore parameters
-				wants_running = false;
-			}
-
-			UserInterface &ui;
-			bool wants_running;
-		} processor = { ui, true };
-
-		using std::placeholders::_1;
-
-		ui.register_processor(
-			L"adduser",
-			std::bind(&Processor::add, &processor, _1));
-		ui.register_processor(
-			L"deluser",
-			std::bind(&Processor::del, &processor, _1));
-		ui.register_processor(
-			L"quit",
-			std::bind(&Processor::quit, &processor, _1));
-
+		UserDatabase user_db(db, ui);
+		CommandProcessor command_processor(ui);
 		int ipc_sockets[2];
 
 		if (::socketpair(AF_UNIX, SOCK_STREAM, 0, ipc_sockets) == -1)
@@ -138,27 +88,32 @@ namespace
 			}
 			catch (...)
 			{
-				ui.printf("network exception: a network error occured\n");
+				ui.printf("exception in network thread\n");
 			}
 
-			ui.printf("restart process to get networking working again\n");
+			ui.quit();
 		};
 
 
 		std::thread network_thread(network_thread_function);
 
-		while (processor.wants_running)
+		while (ui.still_running())
 		{
 			try
 			{
 				ui.run();
+				continue;
 			}
 			catch (std::exception const &exception)
 			{
 				ui.printf("exception in main thread: %s\n", exception.what());
-				ui.printf("exiting\n");
-				break;
 			}
+			catch (...)
+			{
+				ui.printf("exception in main thread\n");
+			}
+
+			ui.quit();
 		}
 
 		if (::send(ipc_sockets[0], "quit", 5, 0) != 5)
