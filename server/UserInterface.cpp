@@ -27,8 +27,9 @@ UserInterface::~UserInterface()
 {
 }
 
-void UserInterface::register_processor(std::wstring const &command,
-                                       command_processor_t const &function)
+UserInterface::command_processors_t::iterator
+UserInterface::register_processor(std::wstring const &command,
+                                  command_processor_t const &function)
 {
 	// commands are non spaced strings
 	if (command.find_first_of(L" \v\t\n\r") != std::wstring::npos)
@@ -42,7 +43,12 @@ void UserInterface::register_processor(std::wstring const &command,
 		throw userinterface_errors::InvalidCommandError(strm.str());
 	}
 
-	command_processors_[command] = function;
+	return command_processors_.insert(command_processors_.end(), {command, function});
+}
+
+void UserInterface::unregister_processor(command_processors_t::iterator iterator)
+{
+	command_processors_.erase(iterator);
 }
 
 void UserInterface::quit()

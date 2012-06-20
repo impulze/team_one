@@ -51,6 +51,7 @@ class UserInterface
 public:
 	typedef std::vector<std::wstring> command_arguments_t;
 	typedef std::function<void(command_arguments_t const &)> command_processor_t;
+	typedef std::unordered_multimap<std::wstring, command_processor_t> command_processors_t;
 
 	/**
 	 * Construct a user command line interface object.
@@ -96,9 +97,18 @@ public:
 	 * @param function The processor that is executed for this command.
 	 *
 	 * @throws InvalidCommandError Thrown if the command includes whitespace.
+	 *
+	 * @return An iterator to the inserted command processor.
 	 */
-	void register_processor(std::wstring const &command,
-	                        command_processor_t const &function);
+	command_processors_t::iterator register_processor(std::wstring const &command,
+	                                                  command_processor_t const &function);
+
+	/**
+	 * Unregister a previously registered processor.
+	 *
+	 * @param iterator The iterator previously returned by register_processor.
+	 */
+	void unregister_processor(command_processors_t::iterator);
 
 	/**
 	 * Print text via the user interface.
@@ -143,7 +153,7 @@ private:
 	 */
 	virtual void wait_for_key() = 0;
 
-	std::unordered_map<std::wstring, command_processor_t> command_processors_;
+	command_processors_t command_processors_;
 };
 
 #include "UserInterface.tcc"
