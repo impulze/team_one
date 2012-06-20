@@ -6,21 +6,18 @@
 namespace
 {
 	template <class T>
-	T sql_forward(T &&t);
-
-	template <class T>
 	struct sql_forwarder
 	{
-		static T forward(T &&t)
+		static T forward(T const &t)
 		{
 			return t;
 		}
 	};
 
 	template <>
-	struct sql_forwarder<std::string>
+	struct sql_forwarder<std::string const &>
 	{
-		static char const *forward(std::string &&string)
+		static char const *forward(std::string const &string)
 		{
 			return string.c_str();
 		}
@@ -30,16 +27,7 @@ namespace
 template <class... T>
 Database::results_t Database::execute_sql(std::string const &statement, T &&... args)
 {
-	return execute_sqlv(statement.c_str(), sql_forward(args)...);
-}
-
-namespace
-{
-	template <class T>
-	T sql_forward(T &&t)
-	{
-		return sql_forwarder<T>::forward(t);
-	}
+	return execute_sqlv(statement.c_str(), sql_forwarder<T>::forward(args)...);
 }
 
 #endif

@@ -6,40 +6,53 @@
 namespace
 {
 	template <class T>
-	T printf_forward(T &&t);
-
-	template <class T>
 	struct printf_forwarder
 	{
-		static T forward(T &&t)
+		static T forward(T const &t)
 		{
 			return t;
 		}
 	};
 
-	template <>
-	struct printf_forwarder<std::string>
+	template <class T>
+	struct string_printf_forwarder
 	{
-		static char const *forward(std::string &&string)
+		static typename T::value_type const *forward(T const &string)
 		{
 			return string.c_str();
 		}
 	};
+
+	template <>
+	struct printf_forwarder<std::string const &>
+		: string_printf_forwarder<std::string>
+	{
+	};
+
+	template <>
+	struct printf_forwarder<std::string>
+		: string_printf_forwarder<std::string>
+	{
+	};
+
+	template <>
+	struct printf_forwarder<std::wstring const &>
+		: string_printf_forwarder<std::wstring>
+	{
+	};
+
+	template <>
+	struct printf_forwarder<std::wstring>
+		: string_printf_forwarder<std::wstring>
+	{
+	};
+
 }
 
 template <class... T>
 void UserInterface::printf(std::string const &format, T &&... args)
 {
-	return printfv(format.c_str(), printf_forward(args)...);
-}
-
-namespace
-{
-	template <class T>
-	T printf_forward(T &&t)
-	{
-		return printf_forwarder<T>::forward(t);
-	}
+	return printfv(format.c_str(), printf_forwarder<T>::forward(args)...);
 }
 
 #endif

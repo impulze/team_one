@@ -35,7 +35,7 @@ void CommandProcessor::adduser(command_arguments_t const &parameters)
 		strm << parameter << ' ';
 	}
 
-	user_interface_.printf("adding user: <%ls>\n", strm.str().c_str());
+	user_interface_.printf("adding user: <%ls>\n", strm.str());
 }
 
 void CommandProcessor::deluser(command_arguments_t const &parameters)
@@ -47,7 +47,7 @@ void CommandProcessor::deluser(command_arguments_t const &parameters)
 		strm << parameter << ' ';
 	}
 
-	user_interface_.printf("adding user: <%ls>\n", strm.str().c_str());
+	user_interface_.printf("adding user: <%ls>\n", strm.str());
 }
 
 void CommandProcessor::quit(command_arguments_t const &)

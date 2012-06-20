@@ -40,7 +40,7 @@ UserDatabase::UserDatabase(std::shared_ptr<Database> database,
 
 void UserDatabase::check(std::string const &name, password_hash_t const &password_hash)
 {
-	Database::results_t const result = database_->execute_sql(g_sql_queries[1], name.c_str());
+	Database::results_t const result = database_->execute_sql(g_sql_queries[1], name);
 
 	user_interface_.printf("user check\n");
 
@@ -48,7 +48,7 @@ void UserDatabase::check(std::string const &name, password_hash_t const &passwor
 	{
 		for (auto const &key_value: row)
 		{
-			user_interface_.printf("%s: %s\n", key_value.first.c_str(), key_value.second.c_str());
+			user_interface_.printf("%s: %s\n", key_value.first, key_value.second);
 		}
 	}
 
@@ -59,7 +59,7 @@ void UserDatabase::create(std::string const &name, password_hash_t const &passwo
 {
 	std::string const password_hash_string(password_hash.begin(), password_hash.end());
 
-	Database::results_t const result = database_->execute_sql(g_sql_queries[2], name.c_str(), password_hash[0]);
+	Database::results_t const result = database_->execute_sql(g_sql_queries[2], name, password_hash[0]);
 
 	user_interface_.printf("user create\n");
 
@@ -67,7 +67,7 @@ void UserDatabase::create(std::string const &name, password_hash_t const &passwo
 	{
 		for (auto const &key_value: row)
 		{
-			user_interface_.printf("%s: %s\n", key_value.first.c_str(), key_value.second.c_str());
+			user_interface_.printf("%s: %s\n", key_value.first, key_value.second);
 		}
 	}
 
@@ -76,7 +76,7 @@ void UserDatabase::create(std::string const &name, password_hash_t const &passwo
 
 void UserDatabase::remove(std::string const &name)
 {
-	Database::results_t const result = database_->execute_sql(g_sql_queries[3], name.c_str());
+	Database::results_t const result = database_->execute_sql(g_sql_queries[3], name);
 
 	user_interface_.printf("user delete\n");
 
@@ -84,7 +84,7 @@ void UserDatabase::remove(std::string const &name)
 	{
 		for (auto const &key_value: row)
 		{
-			user_interface_.printf("%s: %s\n", key_value.first.c_str(), key_value.second.c_str());
+			user_interface_.printf("%s: %s\n", key_value.first, key_value.second);
 		}
 	}
 

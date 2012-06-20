@@ -111,7 +111,7 @@ void UserInterface::process_line()
 					}
 				}
 
-				printf("command <%ls> with arguments <%ls> entered\n", command.c_str(), strm.str().c_str());
+				printf("command <%ls> with arguments <%ls> entered\n", command, strm.str());
 			}
 
 			processing.second(args);
