@@ -17,7 +17,7 @@
 namespace database_errors
 {
 	SQLiteError::SQLiteError(std::string const &message)
-		: Failure(message)
+		: Failure("sqlite error: " + message)
 	{
 	}
 

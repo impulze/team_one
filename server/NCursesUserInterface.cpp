@@ -16,7 +16,7 @@ std::unique_ptr<NCursesUserInterface> NCursesUserInterface::instance_;
 namespace userinterface_errors
 {
 	NCursesError::NCursesError(std::string const &message)
-		: Failure(message)
+		: Failure("ncurses error: " + message)
 	{
 	}
 }
