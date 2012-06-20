@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <csignal>
+#include <cstdarg>
 #include <cstdlib>
 #include <sstream>
 #include <stdexcept>
@@ -303,10 +304,13 @@ void NCursesUserInterface::process_line()
 	}
 }
 
-void NCursesUserInterface::printfv(std::string const &format, va_list list)
+void NCursesUserInterface::printfv(char const *format, ...)
 {
 	mutex_.lock();
-	vw_printw(stdscr, format.c_str(), list);
+	va_list list;
+	va_start(list, format);
+	vw_printw(stdscr, format, list);
+	va_end(list);
 	refresh();
 	mutex_.unlock();
 }

@@ -1,7 +1,9 @@
 #include "SQLiteDatabase.h"
 
 #include <cassert>
+#include <cstdarg>
 #include <iostream>
+#include <stdexcept>
 
 #include <sqlite3.h>
 
@@ -83,16 +85,29 @@ bool SQLiteDatabase::complete_sql(std::string const &statement) const
 	return sqlite3_complete(statement.c_str()) != 0;
 }
 
-SQLiteDatabase::results_t SQLiteDatabase::execute_sql(std::string const &statement)
+SQLiteDatabase::results_t SQLiteDatabase::execute_sqlv(char const *format, ...)
 {
 	using database_errors::SQLiteError;
 
+	va_list list;
 	results_t results;
 	char *sqlite_error_string;
+
+	va_start(list, format);
+	char *sqlite_statement = sqlite3_vmprintf(format, list);
+	va_end(list);
+
+	if (!sqlite_statement)
+	{
+		throw std::bad_alloc();
+	}
+
 	int const result = sqlite3_exec(
-		handle_, statement.c_str(),
+		handle_, sqlite_statement,
 		execute_sql_callback, &results,
 		&sqlite_error_string);
+
+	sqlite3_free(sqlite_statement);
 
 	/**
 	 * SQLiteFree is a class which only exists to free the resources

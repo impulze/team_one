@@ -75,9 +75,9 @@ public:
 	void register_processor(std::wstring const &command,
 	                        command_processor_t const &function);
 
-	void printfv(std::string const &format, va_list list);
-
 private:
+	void printfv(char const *format, ...);
+
 	/**
 	 * Process a line (command input) after the interface successfully
 	 * obtained a line of input.

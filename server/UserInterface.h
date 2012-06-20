@@ -95,19 +95,23 @@ public:
 	 * call it in performance critical areas.
 	 *
 	 * @param format The format as used by printf(3).
-	 * @param args A list of parameters. The parameters need to be plain old data.
+	 * @param args A list of parameters.
 	 */
-	void printf(std::string const &format, ...);
+	template <class... T>
+	void printf(std::string const &format, T &&... args);
 
+private:
 	/**
 	 * Print text via the user interface.
 	 * This member function is thread safe. It locks a mutex, so do not
 	 * call it in performance critical areas.
 	 *
 	 * @param format The format as used by printf(3).
-	 * @param list A va_list created by the va_start macro.
+	 * @param ... Variable arguments in plain old data.
 	 */
-	virtual void printfv(std::string const &format, va_list list) = 0;
+	virtual void printfv(char const *format, ...) = 0;
 };
+
+#include "UserInterface.tcc"
 
 #endif

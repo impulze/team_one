@@ -18,12 +18,3 @@ namespace userinterface_errors
 UserInterface::~UserInterface()
 {
 }
-
-void UserInterface::printf(std::string const &format, ...)
-{
-	va_list list;
-
-	va_start(list, format);
-	printfv(format, list);
-	va_end(list);
-}
