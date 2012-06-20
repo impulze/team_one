@@ -4,6 +4,8 @@
 #include <functional>
 #include <stdexcept>
 #include <string>
+#include <thread>
+#include <unordered_map>
 #include <vector>
 
 /**
@@ -33,6 +35,16 @@ namespace userinterface_errors
 		 */
 		Failure(std::string const &message);
 	};
+
+	/**
+	 * Represent an error which happens if a command was passed that contains
+	 * whitespace.
+	 */
+	struct InvalidCommandError
+		: Failure
+	{
+		InvalidCommandError(std::string const &message);
+	};
 }
 
 class UserInterface
@@ -40,12 +52,12 @@ class UserInterface
 public:
 	typedef std::vector<std::wstring> command_arguments_t;
 	typedef std::function<void(command_arguments_t const &)> command_processor_t;
+	typedef std::unordered_multimap<std::wstring, command_processor_t> command_processors_t;
 
 	/**
 	 * Construct a user command line interface object.
-	 * Provide a default constructor, because this is just an interface.
 	 */
-	UserInterface() = default;
+	UserInterface();
 
 	/**
 	 * Deconstruct a user command line interface object, freeing all its resources
@@ -85,9 +97,93 @@ public:
 	 * @param function The processor that is executed for this command.
 	 *
 	 * @throws InvalidCommandError Thrown if the command includes whitespace.
+	 *
+	 * @return An iterator to the inserted command processor.
 	 */
-	virtual void register_processor(std::wstring const &command,
-	                                command_processor_t const &function) = 0;
+	command_processors_t::iterator register_processor(std::wstring const &command,
+	                                                  command_processor_t const &function);
+
+	/**
+	 * Unregister a previously registered processor.
+	 *
+	 * @param iterator The iterator previously returned by register_processor.
+	 */
+	void unregister_processor(command_processors_t::iterator);
+
+	/**
+	 * Print text via the user interface.
+	 * This member function is thread safe. It locks a mutex, so do not
+	 * call it in performance critical areas.
+	 *
+	 * @param format The format as used by printf(3).
+	 * @param args A list of parameters.
+	 */
+	template <class... T>
+	void printf(std::string const &format, T &&... args);
+
+	/**
+	 *  Ask the user to invoke the return key to quit the program.
+	 */
+	void quit();
+
+protected:
+	/**
+	 * Process a line (command input) after the interface successfully
+	 * obtained a line of input.
+	 * This will eventually call the registered command processor if
+	 * the command matches.
+	 */
+	void process_line();
+
+	std::wstring current_line_;
+
+private:
+	/**
+	 * Print text via the user interface.
+	 * This member function is thread safe. It locks a mutex, so do not
+	 * call it in performance critical areas.
+	 *
+	 * @param format The format as used by printf(3).
+	 * @param ... Variable arguments in plain old data.
+	 */
+	virtual void printfv(char const *format, ...) = 0;
+
+	/**
+	 * Parse arguments for a command.
+	 *
+	 * The arguments are split at whitespace
+	 * except the whitespace is escaped with the
+	 * character '\'.
+	 *
+	 * @param The argument string, probably with escaped
+	 *        whitespace characters.
+	 * @return The arguments for this command.
+	 */
+	static command_arguments_t parse_arguments(std::wstring const &string);
+
+protected:
+	bool still_running_;
+	bool quit_requested_;
+
+private:
+	command_processors_t command_processors_;
+	std::mutex quit_mutex_;
 };
+
+template <class Implementation>
+class UserInterfaceSingleton
+	: public UserInterface
+{
+public:
+	/**
+	 * Obtain a reference to the one and only
+	 * instance of this singleton.
+	 */
+	static Implementation &get_instance();
+
+	static std::unique_ptr<Implementation> instance_;
+};
+
+#include "UserInterface.tcc"
 
 #endif

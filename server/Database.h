@@ -83,11 +83,30 @@ public:
 	/**
 	 * Execute one SQL query.
 	 *
-	 * @param statement The statement to execute.
+	 * Use %q in the format for placeholders.
+	 *
+	 * @param statement The statement (including placeholders) to execute.
+	 * @param args The values for the placeholders.
 	 * @throws database_errors::Failure Thrown if any failure occurs during execution.
 	 * @return The results of the passed SQL query.
 	 */
-	virtual results_t execute_sql(std::string const &statement) = 0;
+	template <class... T>
+	results_t execute_sql(std::string const &statement, T &&... args);
+
+private:
+	/**
+	 * Execute one SQL query.
+	 *
+	 * Use %q in the format for placeholders.
+	 *
+	 * @param statement The statement (including placeholders) to execute.
+	 * @param ... Variable arguments in plain old data.
+	 * @throws database_errors::Failure Thrown if any failure occurs during execution.
+	 * @return The results of the passed SQL query.
+	 */
+	virtual results_t execute_sqlv(char const *statement, ...) = 0;
 };
+
+#include "Database.tcc"
 
 #endif

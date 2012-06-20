@@ -219,7 +219,12 @@ std::vector<std::string> Document::list_documents()
 	{
 		while ((entry = ::readdir(dir)))
 		{
-			list.push_back(entry->d_name);
+			std::string const name = entry->d_name;
+
+			if (name != "." && name != "..")
+			{
+				list.push_back(name);
+			}
 		}
 
 		::closedir(dir);

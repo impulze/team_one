@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 #include <thread>
-#include <unordered_map>
 
 /**
  * @file NCursesUserInterface.h
@@ -35,22 +34,12 @@ namespace userinterface_errors
 		 */
 		NCursesError(std::string const &message);
 	};
-
-	/**
-	 * Represent an error which happens if a command was passed that contains
-	 * whitespace.
-	 */
-	struct InvalidCommandError
-		: Failure
-	{
-		InvalidCommandError(std::string const &message);
-	};
 }
 
 class NCursesUserInterface
 	: public UserInterface
 {
-private:
+public:
 	/**
 	 * Create an interface with NCurses.
 	 * Setup output window and input area.
@@ -64,38 +53,17 @@ public:
 	 */
 	~NCursesUserInterface();
 
-	/**
-	 * Obtain a reference to the one and only
-	 * instance of this singleton.
-	 */
-	static NCursesUserInterface &get_instance();
-
 	void run();
-
-	void register_processor(std::wstring const &command,
-	                        command_processor_t const &function);
-
-	template <class... T>
-	void printf(std::string const &format, T &&... args);
+	void deinitialize();
 
 private:
-	/**
-	 * Process a line (command input) after the interface successfully
-	 * obtained a line of input.
-	 * This will eventually call the registered command processor if
-	 * the command matches.
-	 */
-	void process_line();
+	void printfv(char const *format, ...);
 
-	static std::unique_ptr<NCursesUserInterface> instance_;
+	bool deinitialized_;
 	SCREEN *screen_;
 	WINDOW *input_window_;
-	std::wstring current_line_;
 	std::wstring::size_type current_position_;
-	std::unordered_map<std::wstring, command_processor_t> command_processors_;
 	std::mutex mutex_;
 };
-
-#include "NCursesUserInterface.tcc"
 
 #endif
