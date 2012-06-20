@@ -111,6 +111,11 @@ public:
 	template <class... T>
 	void printf(std::string const &format, T &&... args);
 
+	/**
+	 *  Ask the user to invoke a key to quit the program.
+	 */
+	void quit();
+
 protected:
 	/**
 	 * Process a line (command input) after the interface successfully
@@ -132,6 +137,11 @@ private:
 	 * @param ... Variable arguments in plain old data.
 	 */
 	virtual void printfv(char const *format, ...) = 0;
+
+	/**
+	 * Wait for a key to get pressed.
+	 */
+	virtual void wait_for_key() = 0;
 
 	std::unordered_map<std::wstring, command_processor_t> command_processors_;
 };

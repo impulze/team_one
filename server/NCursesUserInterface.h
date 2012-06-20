@@ -63,6 +63,7 @@ public:
 
 private:
 	void printfv(char const *format, ...);
+	void wait_for_key();
 
 	static std::unique_ptr<NCursesUserInterface> instance_;
 	SCREEN *screen_;

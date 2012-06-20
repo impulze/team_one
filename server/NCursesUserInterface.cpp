@@ -267,3 +267,16 @@ void NCursesUserInterface::printfv(char const *format, ...)
 	refresh();
 	mutex_.unlock();
 }
+
+void NCursesUserInterface::wait_for_key()
+{
+	wnoutrefresh(input_window_);
+	doupdate();
+
+	wint_t input;
+
+	if (get_wch(&input) == ERR)
+	{
+		throw userinterface_errors::NCursesError("fetching user input failed");
+	}
+}

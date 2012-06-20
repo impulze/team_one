@@ -45,6 +45,12 @@ void UserInterface::register_processor(std::wstring const &command,
 	command_processors_[command] = function;
 }
 
+void UserInterface::quit()
+{
+	printf("Press any key to quit.");
+	wait_for_key();
+}
+
 void UserInterface::process_line()
 {
 	for (auto const &processing: command_processors_)
