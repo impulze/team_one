@@ -1,8 +1,11 @@
 #include "CommandProcessor.h"
 #include "UserDatabase.h"
 
+#include <codecvt>
 #include <functional>
+#include <locale>
 #include <sstream>
+#include <vector>
 
 CommandProcessor::CommandProcessor(UserInterface &user_interface,
                                    UserDatabase &user_database)
@@ -27,26 +30,38 @@ CommandProcessor::CommandProcessor(UserInterface &user_interface,
 
 void CommandProcessor::adduser(command_arguments_t const &parameters)
 {
-	std::wostringstream strm;
-
-	for (auto const &parameter: parameters)
+	if (parameters.size() != 2)
 	{
-		strm << parameter << ' ';
+		throw userinterface_errors::InvalidCommandError("Syntax: adduser <name> <password>");
 	}
 
-	user_interface_.printf("adding user: <%ls>\n", strm.str());
+	user_interface_.printf("adding user: \"%ls\"\n", parameters[0]);
+
+	std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+	std::string const nonwide_password = converter.to_bytes(parameters[1]);
+	std::vector<char> const nonwide_password_bytes(nonwide_password.begin(), nonwide_password.end());
+	auto const password_hash = user_database_.hash_bytes(nonwide_password_bytes);
+	std::ostringstream password_hash_readable;
+
+	for (auto const &ub: password_hash)
+	{
+		password_hash_readable
+			<< std::hex
+			<< ((ub & 0xf0) >> 4)
+			<< ((ub & 0x0f) >> 0);
+	}
+
+	user_interface_.printf("added user: \"%ls\" [password hash: %s]\n", parameters[0], password_hash_readable.str());
 }
 
 void CommandProcessor::deluser(command_arguments_t const &parameters)
 {
-	std::wostringstream strm;
-
-	for (auto const &parameter: parameters)
+	if (parameters.size() != 1)
 	{
-		strm << parameter << ' ';
+		throw userinterface_errors::InvalidCommandError("Syntax: deluser <name>");
 	}
 
-	user_interface_.printf("adding user: <%ls>\n", strm.str());
+	user_interface_.printf("deleting user: \"%ls\"\n", parameters[0]);
 }
 
 void CommandProcessor::quit(command_arguments_t const &)

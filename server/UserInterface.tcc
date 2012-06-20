@@ -30,6 +30,12 @@ namespace
 	};
 
 	template <>
+	struct printf_forwarder<std::string &>
+		: string_printf_forwarder<std::string>
+	{
+	};
+
+	template <>
 	struct printf_forwarder<std::string>
 		: string_printf_forwarder<std::string>
 	{
