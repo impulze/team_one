@@ -122,7 +122,7 @@ public:
 	void printf(std::string const &format, T &&... args);
 
 	/**
-	 *  Ask the user to invoke a key to quit the program.
+	 *  Ask the user to invoke the return key to quit the program.
 	 */
 	void quit();
 
@@ -168,6 +168,7 @@ private:
 
 	command_processors_t command_processors_;
 	bool still_running_;
+	bool quit_requested_;
 	std::mutex quit_mutex_;
 };
 

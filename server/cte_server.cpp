@@ -75,7 +75,7 @@ namespace
 
 				network_interface.add_message_handler(&main_network_message_handler);
 				network_interface.run(ipc_sockets[1]);
-				ui.printf("network thread shutdown\n");
+				ui.printf("network thread finished\n");
 				return;
 			}
 
@@ -102,18 +102,17 @@ namespace
 			try
 			{
 				ui.run();
-				continue;
 			}
 			catch (std::exception const &exception)
 			{
 				ui.printf("exception in main thread: %s\n", exception.what());
+				break;
 			}
 			catch (...)
 			{
 				ui.printf("exception in main thread\n");
+				break;
 			}
-
-			ui.quit();
 		}
 
 		if (::send(ipc_sockets[0], "quit", 5, 0) != 5)
