@@ -4,6 +4,7 @@
 #include <functional>
 #include <stdexcept>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 /**
@@ -32,6 +33,16 @@ namespace userinterface_errors
 		 * @param message The error message that describes the error.
 		 */
 		Failure(std::string const &message);
+	};
+
+	/**
+	 * Represent an error which happens if a command was passed that contains
+	 * whitespace.
+	 */
+	struct InvalidCommandError
+		: Failure
+	{
+		InvalidCommandError(std::string const &message);
 	};
 }
 
@@ -86,8 +97,8 @@ public:
 	 *
 	 * @throws InvalidCommandError Thrown if the command includes whitespace.
 	 */
-	virtual void register_processor(std::wstring const &command,
-	                                command_processor_t const &function) = 0;
+	void register_processor(std::wstring const &command,
+	                        command_processor_t const &function);
 
 	/**
 	 * Print text via the user interface.
@@ -100,6 +111,17 @@ public:
 	template <class... T>
 	void printf(std::string const &format, T &&... args);
 
+protected:
+	/**
+	 * Process a line (command input) after the interface successfully
+	 * obtained a line of input.
+	 * This will eventually call the registered command processor if
+	 * the command matches.
+	 */
+	void process_line();
+
+	std::wstring current_line_;
+
 private:
 	/**
 	 * Print text via the user interface.
@@ -110,6 +132,8 @@ private:
 	 * @param ... Variable arguments in plain old data.
 	 */
 	virtual void printfv(char const *format, ...) = 0;
+
+	std::unordered_map<std::wstring, command_processor_t> command_processors_;
 };
 
 #include "UserInterface.tcc"

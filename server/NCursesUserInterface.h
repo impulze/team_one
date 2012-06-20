@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 #include <thread>
-#include <unordered_map>
 
 /**
  * @file NCursesUserInterface.h
@@ -34,16 +33,6 @@ namespace userinterface_errors
 		 * @param message The error message that describes the error.
 		 */
 		NCursesError(std::string const &message);
-	};
-
-	/**
-	 * Represent an error which happens if a command was passed that contains
-	 * whitespace.
-	 */
-	struct InvalidCommandError
-		: Failure
-	{
-		InvalidCommandError(std::string const &message);
 	};
 }
 
@@ -72,26 +61,13 @@ public:
 
 	void run();
 
-	void register_processor(std::wstring const &command,
-	                        command_processor_t const &function);
-
 private:
 	void printfv(char const *format, ...);
-
-	/**
-	 * Process a line (command input) after the interface successfully
-	 * obtained a line of input.
-	 * This will eventually call the registered command processor if
-	 * the command matches.
-	 */
-	void process_line();
 
 	static std::unique_ptr<NCursesUserInterface> instance_;
 	SCREEN *screen_;
 	WINDOW *input_window_;
-	std::wstring current_line_;
 	std::wstring::size_type current_position_;
-	std::unordered_map<std::wstring, command_processor_t> command_processors_;
 	std::mutex mutex_;
 };
 

@@ -1,12 +1,7 @@
 #include "NCursesUserInterface.h"
 
 #include <cassert>
-#include <csignal>
 #include <cstdarg>
-#include <cstdlib>
-#include <sstream>
-#include <stdexcept>
-#include <iostream>
 
 /**
  * @file NCursesUserInterface.cpp
@@ -21,11 +16,6 @@ std::unique_ptr<NCursesUserInterface> NCursesUserInterface::instance_;
 namespace userinterface_errors
 {
 	NCursesError::NCursesError(std::string const &message)
-		: Failure(message)
-	{
-	}
-
-	InvalidCommandError::InvalidCommandError(std::string const &message)
 		: Failure(message)
 	{
 	}
@@ -265,43 +255,6 @@ catch (...)
 {
 	instance_.reset();
 	throw;
-}
-
-void NCursesUserInterface::register_processor(std::wstring const &command,
-                                              command_processor_t const &function)
-{
-	// commands are non spaced strings
-	if (command.find_first_of(L" \v\t\n\r") != std::wstring::npos)
-	{
-		std::ostringstream strm;
-		std::string command_nonwide;
-		std::copy(command.begin(), command.end(), std::back_inserter(command_nonwide));
-
-		strm << '<' << command_nonwide << "> contains whitespace";
-
-		throw userinterface_errors::InvalidCommandError(strm.str());
-	}
-
-	command_processors_[command] = function;
-}
-
-void NCursesUserInterface::process_line()
-{
-	for (auto const &processing: command_processors_)
-	{
-		// check if the command matches, commands are non spaced strings
-		auto const &command = processing.first;
-
-		auto const input_end = current_line_.find(L' ');
-
-		printf("lol: <%ls>\n", current_line_.substr(0, input_end).c_str());
-		if (command == current_line_.substr(0, input_end))
-		{
-			printf("command <%ls> entered\n", command.c_str());
-			command_arguments_t args;
-			processing.second(args);
-		}
-	}
 }
 
 void NCursesUserInterface::printfv(char const *format, ...)
