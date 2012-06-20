@@ -131,7 +131,6 @@ NCursesUserInterface &NCursesUserInterface::get_instance()
 }
 
 void NCursesUserInterface::run()
-try
 {
 	using userinterface_errors::NCursesError;
 
@@ -250,11 +249,6 @@ try
 		}
 
 	}
-}
-catch (...)
-{
-	instance_.reset();
-	throw;
 }
 
 void NCursesUserInterface::printfv(char const *format, ...)
