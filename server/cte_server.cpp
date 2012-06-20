@@ -25,118 +25,149 @@
 class Message;
 extern void main_network_message_handler(const Message &);
 
+namespace
+{
+	// this function is called as soon as the user interface is initialized
+	int main_ui(int argc, char **argv, UserInterface &ui);
+}
+
 int main(int argc, char **argv)
 {
-	auto db = std::make_shared<SQLiteDatabase>(SQLiteDatabase::from_path("./db.sql"));
 	UserInterface &ui = NCursesUserInterface::get_instance();
-	UserDatabase user_db = UserDatabase(db, ui);
 
-	typedef NCursesUserInterface::command_arguments_t command_arguments_t;
-
-	struct Processor
+	try
 	{
-		void add(command_arguments_t const &parameters)
-		{
-			std::wostringstream strm;
+		return main_ui(argc, argv, ui);
+	}
 
-			for (auto const &parameter: parameters)
+	catch (std::exception const &exception)
+	{
+		ui.printf("exception during execution: %s\n", exception.what());
+	}
+	catch (...)
+	{
+		ui.printf("exception during execution");
+	}
+
+	ui.quit();
+
+	return 1;
+}
+
+namespace
+{
+	int main_ui(int argc, char **argv, UserInterface &ui)
+	{
+		auto db = std::make_shared<SQLiteDatabase>(SQLiteDatabase::from_path("./db.sql"));
+		UserDatabase user_db = UserDatabase(db, ui);
+
+		typedef NCursesUserInterface::command_arguments_t command_arguments_t;
+
+		struct Processor
+		{
+			void add(command_arguments_t const &parameters)
 			{
-				strm << parameter << ' ';
+				std::wostringstream strm;
+
+				for (auto const &parameter: parameters)
+				{
+					strm << parameter << ' ';
+				}
+
+				ui.printf("adding user: <%ls>\n", strm.str().c_str());
 			}
 
-			ui.printf("adding user: <%ls>\n", strm.str().c_str());
-		}
-
-		void del(command_arguments_t const &parameters)
-		{
-			std::wostringstream strm;
-
-			for (auto const &parameter: parameters)
+			void del(command_arguments_t const &parameters)
 			{
-				strm << parameter << ' ';
+				std::wostringstream strm;
+
+				for (auto const &parameter: parameters)
+				{
+					strm << parameter << ' ';
+				}
+
+				ui.printf("adding user: <%ls>\n", strm.str().c_str());
 			}
 
-			ui.printf("adding user: <%ls>\n", strm.str().c_str());
-		}
+			void quit(command_arguments_t const &)
+			{
+				// ignore parameters
+				wants_running = false;
+			}
 
-		void quit(command_arguments_t const &)
+			UserInterface &ui;
+			bool wants_running;
+		} processor = { ui, true };
+
+		using std::placeholders::_1;
+
+		ui.register_processor(
+			L"adduser",
+			std::bind(&Processor::add, &processor, _1));
+		ui.register_processor(
+			L"deluser",
+			std::bind(&Processor::del, &processor, _1));
+		ui.register_processor(
+			L"quit",
+			std::bind(&Processor::quit, &processor, _1));
+
+		int ipc_sockets[2];
+
+		if (::socketpair(AF_UNIX, SOCK_STREAM, 0, ipc_sockets) == -1)
 		{
-			// ignore parameters
-			wants_running = false;
+			throw std::runtime_error("unable to create local communication sockets");
 		}
 
-		UserInterface &ui;
-		bool wants_running;
-	} processor = { ui, true };
+		auto const network_thread_function = [&ui, &ipc_sockets]() {
+			try
+			{
+				NetworkInterface network_interface(1337);
 
-	using std::placeholders::_1;
+				network_interface.add_message_handler(&main_network_message_handler);
+				network_interface.run(ipc_sockets[1]);
+				ui.printf("network thread shutdown\n");
+				return;
+			}
 
-	ui.register_processor(
-		L"adduser",
-		std::bind(&Processor::add, &processor, _1));
-	ui.register_processor(
-		L"deluser",
-		std::bind(&Processor::del, &processor, _1));
-	ui.register_processor(
-		L"quit",
-		std::bind(&Processor::quit, &processor, _1));
+			/* catch everything that doesn't require the main thread
+			 * to exit, for now everything does :)
+			 */
+			catch (std::exception const &exception)
+			{
+				ui.printf("exception in network thread: %s\n", exception.what());
+			}
+			catch (...)
+			{
+				ui.printf("network exception: a network error occured\n");
+			}
 
-	int ipc_sockets[2];
+			ui.printf("restart process to get networking working again\n");
+		};
 
-	if (::socketpair(AF_UNIX, SOCK_STREAM, 0, ipc_sockets) == -1)
-	{
-		throw std::runtime_error("unable to create local communication sockets");
+
+		std::thread network_thread(network_thread_function);
+
+		while (processor.wants_running)
+		{
+			try
+			{
+				ui.run();
+			}
+			catch (std::exception const &exception)
+			{
+				ui.printf("exception in main thread: %s\n", exception.what());
+				ui.printf("exiting\n");
+				break;
+			}
+		}
+
+		if (::send(ipc_sockets[0], "quit", 5, 0) != 5)
+		{
+			throw std::runtime_error("unable to exit network thread gracefully");
+		}
+
+		network_thread.join();
+
+		return 0;
 	}
-
-	auto const network_thread_function = [&ui, &ipc_sockets]() {
-		try
-		{
-			NetworkInterface network_interface(1337);
-
-			network_interface.add_message_handler(&main_network_message_handler);
-			network_interface.run(ipc_sockets[1]);
-			ui.printf("network thread shutdown\n");
-			return;
-		}
-
-		/* catch everything that doesn't require the main thread
-		 * to exit, for now everything does :)
-		 */
-		catch (std::exception const &exception)
-		{
-			ui.printf("exception in network thread: %s\n", exception.what());
-		}
-		catch (...)
-		{
-			ui.printf("network exception: a network error occured\n");
-		}
-
-		ui.printf("restart process to get networking working again\n");
-	};
-
-
-	std::thread network_thread(network_thread_function);
-
-	while (processor.wants_running)
-	{
-		try
-		{
-			ui.run();
-		}
-		catch (std::exception const &exception)
-		{
-			ui.printf("exception in main thread: %s\n", exception.what());
-			ui.printf("exiting\n");
-			break;
-		}
-	}
-
-	if (::send(ipc_sockets[0], "quit", 5, 0) != 5)
-	{
-		throw std::runtime_error("unable to exit network thread gracefully");
-	}
-
-	network_thread.join();
-
-	return EXIT_SUCCESS;
 }
