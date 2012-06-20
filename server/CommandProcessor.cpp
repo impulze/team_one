@@ -7,8 +7,7 @@
 CommandProcessor::CommandProcessor(UserInterface &user_interface,
                                    UserDatabase &user_database)
 	: user_interface_(user_interface),
-	  user_database_(user_database),
-	  still_running_(true)
+	  user_database_(user_database)
 {
 	using std::placeholders::_1;
 

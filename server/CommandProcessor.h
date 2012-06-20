@@ -28,15 +28,9 @@ public:
 	void deluser(command_arguments_t const &);
 	void quit(command_arguments_t const &);
 
-	bool still_running() const
-	{
-		return still_running_;
-	}
-
 private:
 	UserInterface &user_interface_;
 	UserDatabase &user_database_;
-	bool still_running_;
 	std::vector<UserInterface::command_processors_t::iterator> registered_processors_;
 };
 

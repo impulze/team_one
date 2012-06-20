@@ -126,19 +126,6 @@ public:
 	 */
 	void quit();
 
-	/**
-	 * Check if the interface wasn't asked to quit.
-	 *
-	 * Initially (after construction) the interface is considered
-	 * to be running.
-	 *
-	 * return true If the user didn't invoke quit() yet, false otherwise.
-	 */
-	bool still_running() const
-	{
-		return still_running_;
-	}
-
 protected:
 	/**
 	 * Process a line (command input) after the interface successfully
@@ -162,11 +149,6 @@ private:
 	virtual void printfv(char const *format, ...) = 0;
 
 	/**
-	 * Wait for a key to get pressed.
-	 */
-	virtual void wait_for_key() = 0;
-
-	/**
 	 * Parse arguments for a command.
 	 *
 	 * The arguments are split at whitespace
@@ -179,10 +161,27 @@ private:
 	 */
 	static command_arguments_t parse_arguments(std::wstring const &string);
 
-	command_processors_t command_processors_;
+protected:
 	bool still_running_;
 	bool quit_requested_;
+
+private:
+	command_processors_t command_processors_;
 	std::mutex quit_mutex_;
+};
+
+template <class Implementation>
+class UserInterfaceSingleton
+	: public UserInterface
+{
+public:
+	/**
+	 * Obtain a reference to the one and only
+	 * instance of this singleton.
+	 */
+	static Implementation &get_instance();
+
+	static std::unique_ptr<Implementation> instance_;
 };
 
 #include "UserInterface.tcc"

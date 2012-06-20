@@ -39,7 +39,7 @@ namespace userinterface_errors
 class NCursesUserInterface
 	: public UserInterface
 {
-private:
+public:
 	/**
 	 * Create an interface with NCurses.
 	 * Setup output window and input area.
@@ -53,19 +53,13 @@ public:
 	 */
 	~NCursesUserInterface();
 
-	/**
-	 * Obtain a reference to the one and only
-	 * instance of this singleton.
-	 */
-	static NCursesUserInterface &get_instance();
-
 	void run();
+	void deinitialize();
 
 private:
 	void printfv(char const *format, ...);
-	void wait_for_key();
 
-	static std::unique_ptr<NCursesUserInterface> instance_;
+	bool deinitialized_;
 	SCREEN *screen_;
 	WINDOW *input_window_;
 	std::wstring::size_type current_position_;

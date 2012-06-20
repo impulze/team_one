@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <cstdarg>
+#include <poll.h>
 
 /**
  * @file NCursesUserInterface.cpp
@@ -10,8 +11,6 @@
  * Implementation file for the readline implementation for the user command line
  * interface.
  */
-
-std::unique_ptr<NCursesUserInterface> NCursesUserInterface::instance_;
 
 namespace userinterface_errors
 {
@@ -22,7 +21,8 @@ namespace userinterface_errors
 }
 
 NCursesUserInterface::NCursesUserInterface()
-	: current_position_(0)
+	: deinitialized_(true),
+	  current_position_(0)
 {
 	using userinterface_errors::NCursesError;
 
@@ -83,61 +83,83 @@ NCursesUserInterface::NCursesUserInterface()
 		throw NCursesError("failed to enable keypad support");
 	}
 
-	// screen region is one line short because of input window
-	if (setscrreg(0, LINES - 1) == ERR)
+	// screen region is two lines short because of input window
+	if (setscrreg(0, LINES - 2) == ERR)
 	{
 		throw NCursesError("failed to set screen region");
 	}
 
-	input_window_ = ncurses_free_object.input_window = subwin(stdscr, 1, COLS, LINES - 1, 0);
-
-	if (!input_window_)
+	// don't move cursor here
+	if (leaveok(stdscr, TRUE) == ERR)
 	{
-		throw NCursesError("failed to initialize input ncurses window");
+		throw NCursesError("failed to leave cursor be");
 	}
 
+	input_window_ = ncurses_free_object.input_window = newwin(1, COLS, LINES - 1, 0);
 	assert(scrollok(stdscr, TRUE) == OK); // only fails if no active window
 	assert(scrollok(input_window_, TRUE) == OK); // only fails if no active window
 
 
-	if ((idlok(stdscr, TRUE) == ERR) || (idlok(input_window_, TRUE) == ERR))
+	if (!input_window_ || wmove(input_window_, 0, 0) == ERR)
 	{
-		throw NCursesError("failed to initialize hardware insert/delete line");
+		throw NCursesError("failed to initialize input ncurses window");
 	}
 
-	if (refresh() == ERR)
+	if (wnoutrefresh(stdscr) == ERR || wnoutrefresh(input_window_) == ERR || doupdate() == ERR)
 	{
-		throw NCursesError("failed to refresh window");
+		throw NCursesError("failed to refresh windows");
 	}
 
 	ncurses_free_object.needs_free = false;
+	deinitialized_ = false;
 }
 
 NCursesUserInterface::~NCursesUserInterface()
 {
-	delwin(input_window_);
-	endwin();
-	delscreen(screen_);
-}
-
-NCursesUserInterface &NCursesUserInterface::get_instance()
-{
-	if (!instance_)
-	{
-		instance_.reset(new NCursesUserInterface());
-	}
-
-	return *instance_;
+	deinitialize();
 }
 
 void NCursesUserInterface::run()
+{
+try
 {
 	using userinterface_errors::NCursesError;
 
 	for (;;)
 	{
-		wnoutrefresh(input_window_);
-		doupdate();
+		static ::pollfd fd { 0, POLLIN, 0 };
+
+		switch (::poll(&fd, 1, 10))
+		{
+			case 0:
+				// timeout
+				if (quit_requested_)
+				{
+					printf("Press any key to exit\n");
+
+					wtimeout(input_window_, -1);
+
+					if (getch() == ERR)
+					{
+						throw NCursesError("fetching user input failed");
+					}
+
+					return;
+				}
+
+				continue;
+
+			case -1:
+				throw NCursesError("polling stdin failed");
+
+			default:
+				if (fd.revents & POLLIN)
+				{
+					break;
+				}
+
+				throw NCursesError("polling stdin failed");
+		}
 
 		wint_t input;
 
@@ -166,7 +188,7 @@ void NCursesUserInterface::run()
 
 				current_line_.clear();
 
-				return;
+				continue;
 			}
 
 			case L'\b':
@@ -244,33 +266,60 @@ void NCursesUserInterface::run()
 
 				wprintw(input_window_, "%lc", input);
 				wmove(input_window_, 0, current_position_);
-
 				break;
 		}
 
+		wnoutrefresh(stdscr);
+		wnoutrefresh(input_window_);
+		doupdate();
+	}
+}
+catch (...)
+{
+	deinitialize();
+	throw;
+}
+}
+
+void NCursesUserInterface::deinitialize()
+{
+	if (!deinitialized_)
+	{
+		delwin(input_window_);
+		endwin();
+		delscreen(screen_);
+		deinitialized_ = true;
 	}
 }
 
 void NCursesUserInterface::printfv(char const *format, ...)
 {
+try
+{
 	mutex_.lock();
+
 	va_list list;
 	va_start(list, format);
-	vw_printw(stdscr, format, list);
+
+	if (!deinitialized_)
+	{
+		vw_printw(stdscr, format, list);
+		wnoutrefresh(stdscr);
+		wnoutrefresh(input_window_);
+		doupdate();
+	}
+	else
+	{
+		vfprintf(stderr, format, list);
+	}
+
 	va_end(list);
-	refresh();
+
 	mutex_.unlock();
 }
-
-void NCursesUserInterface::wait_for_key()
+catch (...)
 {
-	wnoutrefresh(input_window_);
-	doupdate();
-
-	wint_t input;
-
-	if (get_wch(&input) == ERR)
-	{
-		throw userinterface_errors::NCursesError("fetching user input failed");
-	}
+	deinitialize();
+	throw;
+}
 }

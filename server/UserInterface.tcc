@@ -55,4 +55,18 @@ void UserInterface::printf(std::string const &format, T &&... args)
 	return printfv(format.c_str(), printf_forwarder<T>::forward(args)...);
 }
 
+template <class Implementation>
+Implementation &UserInterfaceSingleton<Implementation>::get_instance()
+{
+	if (!instance_)
+	{
+		instance_.reset(new Implementation());
+	}
+
+	return *instance_;
+}
+
+template <class T>
+std::unique_ptr<T> UserInterfaceSingleton<T>::instance_;
+
 #endif

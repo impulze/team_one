@@ -24,8 +24,7 @@ namespace userinterface_errors
 }
 
 UserInterface::UserInterface()
-	: still_running_(true),
-	  quit_requested_(false)
+	: quit_requested_(false)
 {
 }
 
@@ -63,7 +62,6 @@ void UserInterface::quit()
 
 	try
 	{
-		printf("Press return to quit.");
 		quit_requested_ = true;
 	}
 	catch (...)
@@ -77,16 +75,6 @@ void UserInterface::quit()
 
 void UserInterface::process_line()
 {
-	quit_mutex_.lock();
-
-	if (quit_requested_)
-	{
-		still_running_ = false;
-		return;
-	}
-
-	quit_mutex_.unlock();
-
 	for (auto const &processing: command_processors_)
 	{
 		// check if the command matches, commands are non spaced strings
@@ -114,7 +102,14 @@ void UserInterface::process_line()
 				printf("command <%ls> with arguments <%ls> entered\n", command, strm.str());
 			}
 
-			processing.second(args);
+			try
+			{
+				processing.second(args);
+			}
+			catch (userinterface_errors::InvalidCommandError const &error)
+			{
+				printf("invalid command\n%s\n", error.what());
+			}
 		}
 	}
 }
