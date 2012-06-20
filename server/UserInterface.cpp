@@ -96,9 +96,65 @@ void UserInterface::process_line()
 
 		if (command == current_line_.substr(0, input_end))
 		{
-			printf("command <%ls> entered\n", command.c_str());
-			command_arguments_t args;
+			command_arguments_t const args = parse_arguments(current_line_.substr(input_end + 1));
+
+			{
+				std::wostringstream strm;
+
+				for (auto it = args.begin(); it != args.end(); ++it)
+				{
+					strm << '"' << *it << '"';
+
+					if (it + 1 != args.end())
+					{
+						strm << ',';
+					}
+				}
+
+				printf("command <%ls> with arguments <%ls> entered\n", command.c_str(), strm.str().c_str());
+			}
+
 			processing.second(args);
 		}
 	}
+}
+
+UserInterface::command_arguments_t
+UserInterface::parse_arguments(std::wstring const &string)
+{
+	command_arguments_t command_arguments;
+	std::wstring current_argument;
+
+	if (string.empty())
+	{
+		return command_arguments;
+	}
+
+	for (auto it = string.begin(); it != string.end(); ++it)
+	{
+		if (*it == L' ')
+		{
+			if (it == string.begin())
+			{
+				command_arguments.push_back(L"");
+			}
+			else if (*(it - 1) == L'\\')
+			{
+				current_argument.back() = *it;
+			}
+			else
+			{
+				command_arguments.push_back(current_argument);
+				current_argument.clear();
+			}
+		}
+		else
+		{
+			current_argument.push_back(*it);
+		}
+	}
+
+	command_arguments.push_back(current_argument);
+
+	return command_arguments;
 }

@@ -166,6 +166,19 @@ private:
 	 */
 	virtual void wait_for_key() = 0;
 
+	/**
+	 * Parse arguments for a command.
+	 *
+	 * The arguments are split at whitespace
+	 * except the whitespace is escaped with the
+	 * character '\'.
+	 *
+	 * @param The argument string, probably with escaped
+	 *        whitespace characters.
+	 * @return The arguments for this command.
+	 */
+	static command_arguments_t parse_arguments(std::wstring const &string);
+
 	command_processors_t command_processors_;
 	bool still_running_;
 	bool quit_requested_;
