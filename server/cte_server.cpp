@@ -10,6 +10,7 @@
 #include "NetworkInterface.h"
 #include "NCursesUserInterface.h"
 #include "SQLiteDatabase.h"
+#include "UserDatabase.h"
 
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -26,8 +27,9 @@ extern void main_network_message_handler(const Message &);
 
 int main(int argc, char **argv)
 {
-	SQLiteDatabase sqlite_db = SQLiteDatabase::from_path("./db.sql");
-	NCursesUserInterface &ncurses_ui = NCursesUserInterface::get_instance();
+	auto db = std::make_shared<SQLiteDatabase>(SQLiteDatabase::from_path("./db.sql"));
+	UserInterface &ui = NCursesUserInterface::get_instance();
+	UserDatabase user_db = UserDatabase(db, ui);
 
 	typedef NCursesUserInterface::command_arguments_t command_arguments_t;
 
@@ -42,7 +44,7 @@ int main(int argc, char **argv)
 				strm << parameter << ' ';
 			}
 
-			ncurses_ui.printf("adding user: <%ls>\n", strm.str().c_str());
+			ui.printf("adding user: <%ls>\n", strm.str().c_str());
 		}
 
 		void del(command_arguments_t const &parameters)
@@ -54,7 +56,7 @@ int main(int argc, char **argv)
 				strm << parameter << ' ';
 			}
 
-			ncurses_ui.printf("adding user: <%ls>\n", strm.str().c_str());
+			ui.printf("adding user: <%ls>\n", strm.str().c_str());
 		}
 
 		void quit(command_arguments_t const &)
@@ -63,19 +65,19 @@ int main(int argc, char **argv)
 			wants_running = false;
 		}
 
-		NCursesUserInterface &ncurses_ui;
+		UserInterface &ui;
 		bool wants_running;
-	} processor = { ncurses_ui, true };
+	} processor = { ui, true };
 
 	using std::placeholders::_1;
 
-	ncurses_ui.register_processor(
+	ui.register_processor(
 		L"adduser",
 		std::bind(&Processor::add, &processor, _1));
-	ncurses_ui.register_processor(
+	ui.register_processor(
 		L"deluser",
 		std::bind(&Processor::del, &processor, _1));
-	ncurses_ui.register_processor(
+	ui.register_processor(
 		L"quit",
 		std::bind(&Processor::quit, &processor, _1));
 
@@ -86,14 +88,14 @@ int main(int argc, char **argv)
 		throw std::runtime_error("unable to create local communication sockets");
 	}
 
-	auto const network_thread_function = [&ncurses_ui, &ipc_sockets]() {
+	auto const network_thread_function = [&ui, &ipc_sockets]() {
 		try
 		{
 			NetworkInterface network_interface(1337);
 
 			network_interface.add_message_handler(&main_network_message_handler);
 			network_interface.run(ipc_sockets[1]);
-			ncurses_ui.printf("network thread shutdown\n");
+			ui.printf("network thread shutdown\n");
 			return;
 		}
 
@@ -102,14 +104,14 @@ int main(int argc, char **argv)
 		 */
 		catch (std::exception const &exception)
 		{
-			ncurses_ui.printf("exception in network thread: %s\n", exception.what());
+			ui.printf("exception in network thread: %s\n", exception.what());
 		}
 		catch (...)
 		{
-			ncurses_ui.printf("network exception: a network error occured\n");
+			ui.printf("network exception: a network error occured\n");
 		}
 
-		ncurses_ui.printf("restart process to get networking working again\n");
+		ui.printf("restart process to get networking working again\n");
 	};
 
 
@@ -119,12 +121,12 @@ int main(int argc, char **argv)
 	{
 		try
 		{
-			ncurses_ui.run();
+			ui.run();
 		}
 		catch (std::exception const &exception)
 		{
-			ncurses_ui.printf("exception in main thread: %s\n", exception.what());
-			ncurses_ui.printf("exiting\n");
+			ui.printf("exception in main thread: %s\n", exception.what());
+			ui.printf("exiting\n");
 			break;
 		}
 	}

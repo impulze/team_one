@@ -302,3 +302,11 @@ void NCursesUserInterface::process_line()
 		}
 	}
 }
+
+void NCursesUserInterface::printfv(std::string const &format, va_list list)
+{
+	mutex_.lock();
+	vw_printw(stdscr, format.c_str(), list);
+	refresh();
+	mutex_.unlock();
+}

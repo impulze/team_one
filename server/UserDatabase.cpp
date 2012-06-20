@@ -1,5 +1,7 @@
 #include "UserDatabase.h"
 
+#include "UserInterface.h"
+
 #include <stdexcept>
 
 /**
@@ -9,8 +11,10 @@
  * Implementation file for the user database implementation.
  */
 
-UserDatabase::UserDatabase(std::shared_ptr<Database> database)
-	: database_(database)
+UserDatabase::UserDatabase(std::shared_ptr<Database> database,
+                           UserInterface &user_interface)
+	: database_(database),
+	  user_interface_(user_interface)
 {
 }
 

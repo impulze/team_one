@@ -18,6 +18,8 @@
  * and to check the credentials for users.
  */
 
+class UserInterface;
+
 class UserDatabase
 {
 public:
@@ -27,8 +29,10 @@ public:
 	 * Construct the user database.
 	 *
 	 * @param database A shared database handle.
+	 * @param user_interface The user interface instance.
 	 */
-	UserDatabase(std::shared_ptr<Database> database);
+	UserDatabase(std::shared_ptr<Database> database,
+	             UserInterface &user_interface);
 
 	/**
 	 * Check credentials of a user.
@@ -64,6 +68,7 @@ public:
 
 private:
 	std::shared_ptr<Database> database_;
+	UserInterface &user_interface_;
 };
 
 #endif

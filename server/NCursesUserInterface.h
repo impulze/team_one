@@ -75,8 +75,7 @@ public:
 	void register_processor(std::wstring const &command,
 	                        command_processor_t const &function);
 
-	template <class... T>
-	void printf(std::string const &format, T &&... args);
+	void printfv(std::string const &format, va_list list);
 
 private:
 	/**
@@ -95,7 +94,5 @@ private:
 	std::unordered_map<std::wstring, command_processor_t> command_processors_;
 	std::mutex mutex_;
 };
-
-#include "NCursesUserInterface.tcc"
 
 #endif
