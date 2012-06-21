@@ -188,7 +188,7 @@ try
 
 				current_line_.clear();
 
-				continue;
+				break;
 			}
 
 			case L'\b':
