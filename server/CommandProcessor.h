@@ -26,6 +26,8 @@ public:
 
 	void adduser(command_arguments_t const &);
 	void deluser(command_arguments_t const &);
+	void check_password(command_arguments_t const &);
+	void check_password_hash(command_arguments_t const &);
 	void quit(command_arguments_t const &);
 
 private:

@@ -70,6 +70,64 @@ void CommandProcessor::deluser(command_arguments_t const &parameters)
 	}
 }
 
+void CommandProcessor::check_password(command_arguments_t const &parameters)
+{
+	if (parameters.size() != 2)
+	{
+		throw userinterface_errors::InvalidCommandError("Syntax: check <name> <password>");
+	}
+
+
+	std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+	std::string const nonwide_name = converter.to_bytes(parameters[0]);
+	std::string const nonwide_password = converter.to_bytes(parameters[1]);
+
+	try
+	{
+		std::vector<char> hash_bytes(nonwide_password.begin(), nonwide_password.end());
+		UserDatabase::password_hash_t const hash = user_database_.hash_bytes(hash_bytes);
+		user_database_.check(nonwide_name, hash);
+	}
+	catch (database_errors::Failure const &error)
+	{
+		throw userinterface_errors::CommandFailedError(error.what());
+	}
+}
+
+void CommandProcessor::check_password_hash(command_arguments_t const &parameters)
+{
+	if (parameters.size() != 2)
+	{
+		throw userinterface_errors::InvalidCommandError("Syntax: check <name> <password_hash>");
+	}
+
+
+	std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+	std::string const nonwide_name = converter.to_bytes(parameters[0]);
+	std::string const nonwide_password_hash = converter.to_bytes(parameters[1]);
+
+	try
+	{
+		UserDatabase::password_hash_t hash;
+
+		if (nonwide_password_hash.size() != 40)
+		{
+			throw userinterface_errors::CommandFailedError("wrong hash format, should be 40 chars long");
+		}
+
+		for (std::string::size_type i = 0; i < nonwide_password_hash.size(); i += 2)
+		{
+			hash[i / 2] = (nonwide_password_hash[i] << 4) | nonwide_password_hash[i + 1];
+		}
+
+		user_database_.check(nonwide_name, hash);
+	}
+	catch (database_errors::Failure const &error)
+	{
+		throw userinterface_errors::CommandFailedError(error.what());
+	}
+}
+
 void CommandProcessor::quit(command_arguments_t const &)
 {
 	// ignore parameters
