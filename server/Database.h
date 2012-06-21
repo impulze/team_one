@@ -32,6 +32,22 @@ namespace database_errors
 		 */
 		Failure(std::string const &message);
 	};
+
+	/**
+	 * A database exception which is thrown if a constraint was
+	 * violated.
+	 */
+	struct ConstraintError
+		: Failure
+	{
+		/**
+		 * Construct a new constraint failure with a specific
+		 * error message.
+		 *
+		 * @param message The error message that describes the error.
+		 */
+		ConstraintError(std::string const &message);
+	};
 }
 
 /**

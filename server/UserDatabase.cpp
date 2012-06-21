@@ -18,16 +18,23 @@ namespace
 {
 	std::string const g_sql_queries[] = {
 		"CREATE TABLE IF NOT EXISTS UserDatabase ("
-			"u_id INTEGER NOT NULL,"
+			"u_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,"
 			"u_name VARCHAR(64) NOT NULL,"
 			"u_pwhash BLOB NOT NULL,"
-			"PRIMARY KEY(u_id),"
 			"UNIQUE(u_name)"
 		");",
 		"SELECT u_pwhash FROM UserDatabase WHERE u_name = %Q;",
-		"INSERT INTO UserDatabase VALUES (%Q, %Q);",
+		"INSERT INTO UserDatabase (u_name, u_pwhash) VALUES (%Q, %Q);",
 		"DELETE FROM UserDatabase WHERE p_name = %Q;",
 	};
+}
+
+namespace userdatabase_errors
+{
+	UserAlreadyPresentError::UserAlreadyPresentError(std::string const &message)
+		: std::runtime_error(message)
+	{
+	}
 }
 
 UserDatabase::UserDatabase(std::shared_ptr<Database> database,
@@ -74,18 +81,32 @@ void UserDatabase::create(std::string const &name, password_hash_t const &passwo
 
 	user_interface_.printf("adding user: \"%s\", [password_hash: \"%s\"\n", name, password_hash_readable.str());
 
-	Database::results_t const result = database_->execute_sql(g_sql_queries[2], name, password_hash);
+	try
+	{
+		Database::results_t const result = database_->execute_sql(g_sql_queries[2], name, password_hash);
+
+		// debugging
+		for (auto const &row: result)
+		{
+			for (auto const &key_value: row)
+			{
+				user_interface_.printf("%s: %s\n", key_value.first, key_value.second);
+			}
+		}
+	}
+	catch (...)
+	{
+		std::ostringstream strm;
+
+		strm << "user \"" << name << "\" already present in database.";
+
+		user_interface_.printf("adding user: failed (%s)\n", strm.str());
+
+		throw userdatabase_errors::UserAlreadyPresentError(strm.str());
+	}
 
 	user_interface_.printf("adding user: success\n");
 
-	// debugging
-	for (auto const &row: result)
-	{
-		for (auto const &key_value: row)
-		{
-			user_interface_.printf("%s: %s\n", key_value.first, key_value.second);
-		}
-	}
 }
 
 void UserDatabase::create(std::string const &name, std::string const &password)

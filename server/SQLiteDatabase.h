@@ -20,8 +20,9 @@ namespace database_errors
 	 * Specific errors derive from this class to create
 	 * an exception hierarchy.
 	 */
+	template <class Base = database_errors::Failure>
 	struct SQLiteError
-		: Failure
+		: Base
 	{
 		/**
 		 * Construct a new SQLite database failure with a specific
@@ -36,7 +37,7 @@ namespace database_errors
 	 * A database connection exception of the SQLite implementation.
 	 */
 	struct SQLiteConnectionError
-		: SQLiteError
+		: SQLiteError<>
 	{
 		/**
 		 * Construct a new SQLite database failure describing
@@ -45,6 +46,21 @@ namespace database_errors
 		 * @param message The error message that describes the error.
 		 */
 		SQLiteConnectionError(std::string const &message);
+	};
+
+	/**
+	 * A database constraint violation of the SQLite implementation.
+	 */
+	struct SQLiteConstraintError
+		: SQLiteError<database_errors::ConstraintError>
+	{
+		/**
+		 * Construct a new SQLite database failure describing
+		 * an error while handling the connection.
+		 *
+		 * @param message The error message that describes the error.
+		 */
+		SQLiteConstraintError(std::string const &message);
 	};
 }
 

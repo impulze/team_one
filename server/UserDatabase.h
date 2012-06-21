@@ -20,6 +20,18 @@
 
 class UserInterface;
 
+namespace userdatabase_errors
+{
+	struct UserDatabaseError
+		: erAlreadyPresentError
+		: UserDatabaseError
+	struct UserAlreadyPresentError
+		: UserDatabaseError
+	{
+		UserAlreadyPresentError(std::string const &message);
+	};
+}
+
 class UserDatabase
 {
 public:

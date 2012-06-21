@@ -16,13 +16,19 @@
 
 namespace database_errors
 {
-	SQLiteError::SQLiteError(std::string const &message)
-		: Failure("sqlite error: " + message)
+	template <class Base>
+	SQLiteError<Base>::SQLiteError(std::string const &message)
+		: Base("sqlite error: " + message)
 	{
 	}
 
 	SQLiteConnectionError::SQLiteConnectionError(std::string const &message)
 		: SQLiteError(message)
+	{
+	}
+
+	SQLiteConstraintError::SQLiteConstraintError(std::string const &message)
+		: SQLiteError<database_errors::ConstraintError>(message)
 	{
 	}
 }
@@ -136,11 +142,11 @@ SQLiteDatabase::results_t SQLiteDatabase::execute_sqlv(char const *format, ...)
 	{
 		if (sqlite_error_string)
 		{
-			throw SQLiteError(sqlite_error_string);
+			throw SQLiteError<>(sqlite_error_string);
 		}
 		else
 		{
-			throw SQLiteError("unknown SQLite error");
+			throw SQLiteError<>("unknown SQLite error");
 		}
 	}
 

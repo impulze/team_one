@@ -13,6 +13,11 @@ namespace database_errors
 		: std::runtime_error(message)
 	{
 	}
+
+	ConstraintError::ConstraintError(std::string const &message)
+		: Failure(message)
+	{
+	}
 }
 
 Database::~Database()

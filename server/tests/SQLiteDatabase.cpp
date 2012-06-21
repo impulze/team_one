@@ -32,7 +32,7 @@ BOOST_AUTO_TEST_CASE(construction)
 	for (auto const &message: g_sqlite_database_failure_messages)
 	{
 		BOOST_CHECK_NO_THROW(SQLiteConnectionError tmp(message));
-		BOOST_CHECK_NO_THROW(SQLiteError tmp(message));
+		BOOST_CHECK_NO_THROW(SQLiteError<> tmp(message));
 	}
 
 	// check valid creation
@@ -86,7 +86,7 @@ BOOST_AUTO_TEST_CASE(sql_execute)
 			execute_sql("CREATE TABLE foo (name INTEGER);"));
 	BOOST_CHECK_EXCEPTION(
 		SQLiteDatabase::temporary().
-			execute_sql("CREATE TABLE foo;"), SQLiteError, stub_predicate);
+			execute_sql("CREATE TABLE foo;"), SQLiteError<>, stub_predicate);
 
 	// destructor shouldn't throw
 	SQLiteDatabase sqlite_db = SQLiteDatabase::temporary();
@@ -103,7 +103,7 @@ BOOST_AUTO_TEST_CASE(exception_string_passing)
 	for (auto const &message: g_sqlite_database_failure_messages)
 	{
 		BOOST_CHECK_EQUAL(message, SQLiteConnectionError(message).what());
-		BOOST_CHECK_EQUAL(message, SQLiteError(message).what());
+		BOOST_CHECK_EQUAL(message, SQLiteError<>(message).what());
 	}
 }
 
