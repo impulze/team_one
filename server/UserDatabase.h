@@ -31,13 +31,13 @@ namespace userdatabase_errors
 	struct UserAlreadyPresentError
 		: database_errors::ConstraintError
 	{
-		UserAlreadyPresentError(std::string const &message);
+		UserAlreadyPresentError(std::string const &name);
 	};
 
 	struct UserDoesntExistError
 		: Failure
 	{
-		UserDoesntExistError(std::string const &message);
+		UserDoesntExistError(std::string const &name);
 	};
 
 	struct InvalidPasswordError

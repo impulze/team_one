@@ -21,11 +21,14 @@ namespace
 			"u_pwhash VARCHAR(40) NOT NULL,"
 			"UNIQUE(u_name)"
 		");",
-		"SELECT u_id, u_pwhash FROM UserDatabase WHERE u_name = %Q;",
+		"SELECT * FROM UserDatabase WHERE u_name = %Q;",
 		"INSERT INTO UserDatabase (u_name, u_pwhash) VALUES (%Q, %Q);",
-		"DELETE FROM UserDatabase WHERE p_name = %Q;",
+		"DELETE FROM UserDatabase WHERE u_id = %Q;",
 		"SELECT MAX(u_id) FROM UserDatabase",
 	};
+
+	inline std::string generate_userdoesntexist_message(std::string const &user);
+	inline std::string generate_useralreadypresent_message(std::string const &user);
 }
 
 namespace userdatabase_errors
@@ -35,13 +38,13 @@ namespace userdatabase_errors
 	{
 	}
 
-	UserAlreadyPresentError::UserAlreadyPresentError(std::string const &message)
-		: database_errors::ConstraintError(message)
+	UserAlreadyPresentError::UserAlreadyPresentError(std::string const &name)
+		: database_errors::ConstraintError(generate_useralreadypresent_message(name))
 	{
 	}
 
-	UserDoesntExistError::UserDoesntExistError(std::string const &message)
-		: Failure(message)
+	UserDoesntExistError::UserDoesntExistError(std::string const &name)
+		: Failure(generate_userdoesntexist_message(name))
 	{
 	}
 
@@ -72,7 +75,7 @@ std::int32_t UserDatabase::check(std::string const &name, Hash::hash_t const &pa
 
 		if (result.size() != 1)
 		{
-			throw userdatabase_errors::Failure("no user in database yet");
+			throw userdatabase_errors::UserDoesntExistError(name);
 		}
 
 		if (result[0].find("MAX(u_id)") == result[0].end())
@@ -92,7 +95,7 @@ std::int32_t UserDatabase::check(std::string const &name, Hash::hash_t const &pa
 
 	if (result.size() != 1)
 	{
-		throw userdatabase_errors::UserDoesntExistError("user not in database");
+		throw userdatabase_errors::UserDoesntExistError(name);
 	}
 
 	if (result[0].find("u_pwhash") == result[0].end() || result[0].find("u_id") == result[0].end())
@@ -119,23 +122,10 @@ void UserDatabase::create(std::string const &name, Hash::hash_t const &password_
 	try
 	{
 		Database::results_t const result = database_->execute_sql(g_sql_queries[2], name, password_hash_readable);
-
-		// debugging
-		for (auto const &row: result)
-		{
-			for (auto const &key_value: row)
-			{
-				user_interface_.printf("%s: %s\n", key_value.first, key_value.second);
-			}
-		}
 	}
 	catch (database_errors::ConstraintError const &)
 	{
-		std::ostringstream strm;
-
-		strm << "user \"" << name << "\" already present in database.";
-
-		throw userdatabase_errors::UserAlreadyPresentError(strm.str());
+		throw userdatabase_errors::UserAlreadyPresentError(name);
 	}
 
 	user_interface_.printf("adding user: success\n");
@@ -152,18 +142,43 @@ void UserDatabase::create(std::string const &name, std::string const &password)
 
 void UserDatabase::remove(std::string const &name)
 {
-	user_interface_.printf("remove user: \"%s\"\n", name);
+	user_interface_.printf("removing user: \"%s\"\n", name);
 
-	Database::results_t const result = database_->execute_sql(g_sql_queries[3], name);
+	Database::results_t result = database_->execute_sql(g_sql_queries[1], name);
 
-	user_interface_.printf("remove user: success\n");
-
-	// debugging
-	for (auto const &row: result)
+	if (result.size() != 1)
 	{
-		for (auto const &key_value: row)
-		{
-			user_interface_.printf("%s: %s\n", key_value.first, key_value.second);
-		}
+		throw userdatabase_errors::UserDoesntExistError(name);
+	}
+
+	if (result[0].find("u_id") == result[0].end())
+	{
+		throw userdatabase_errors::Failure("no user id for user");
+	}
+
+	result = database_->execute_sql(g_sql_queries[3], result[0]["u_id"]);
+
+	user_interface_.printf("removing user: success\n");
+}
+
+namespace
+{
+	std::string generate_userdoesntexist_message(std::string const &name)
+	{
+		std::ostringstream strm;
+
+		strm << "user \"" << name << "\" doesn't exist in database.";
+
+		return strm.str();
+	}
+
+	std::string generate_useralreadypresent_message(std::string const &name)
+	{
+		std::ostringstream strm;
+
+		strm << "user \"" << name << "\" already present in database.";
+
+		return strm.str();
 	}
 }
+
