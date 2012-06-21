@@ -1,4 +1,5 @@
 CXX = clang++ -std=c++11
+VALGRIND = valgrind
 
 CXXFLAGS += -Wall -Wextra
 CXXFLAGS += $(shell ncursesw5-config --cflags)
@@ -47,6 +48,13 @@ clean:
 	$(RM) tests/Server $(TEST_BIN_OBJS)
 	$(RM) $(BIN_DEPS)
 	$(RM) $(TEST_BIN_DEPS)
+
+valgrind:
+	$(VALGRIND) \
+		--leak-check=full \
+		--show-reachable=yes \
+		--suppressions=ncurses.supp \
+		./Server
 
 -include $(BIN_DEPS)
 -include $(TEST_BIN_DEPS)
