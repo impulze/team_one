@@ -44,11 +44,11 @@ void Message::receive_from(ClientSptr client)
 		case TYPE_SYNC_CURSOR:
 		case TYPE_SYNC_DELETION:
 			client->receive(&position, FIELD_SIZE_SIZE);
-			position = ntohll(position);
+			position = ntohl(position);
 			break;
 		case TYPE_SYNC_MULTIBYTE:
 			client->receive(&length, FIELD_SIZE_SIZE);
-			length = ntohll(length);
+			length = ntohl(length);
 			break;
 		case TYPE_USER_LOGIN:
 			name.resize(FIELD_SIZE_USER_NAME);
@@ -63,15 +63,13 @@ void Message::receive_from(ClientSptr client)
 	switch (type)
 	{
 		case TYPE_DOC_ACTIVATE:
-			hash.resize(FIELD_SIZE_HASH);
-			client->receive(&hash, FIELD_SIZE_HASH);
 		case TYPE_USER_LOGIN:
 			hash.resize(FIELD_SIZE_HASH);
 			client->receive(&hash, FIELD_SIZE_HASH);
 			break;
 		case TYPE_SYNC_DELETION:
 			client->receive(&length, FIELD_SIZE_SIZE);
-			length = ntohll(length);
+			length = ntohl(length);
 			break;
 		case TYPE_SYNC_MULTIBYTE:
 			bytes.resize(length);
@@ -101,7 +99,7 @@ std::vector<char> &Message::generate_bytestream(std::vector<char> &dest) const
 		case TYPE_SYNC_BYTE:
 		case TYPE_SYNC_DELETION:
 		case TYPE_SYNC_MULTIBYTE:
-			append_bytes(dest, htonll(position));
+			append_bytes(dest, htonl(position));
 			break;
 		case TYPE_USER_JOIN:
 		case TYPE_USER_QUIT:
@@ -128,7 +126,7 @@ std::vector<char> &Message::generate_bytestream(std::vector<char> &dest) const
 			break;
 		case TYPE_SYNC_DELETION:
 		case TYPE_SYNC_MULTIBYTE:
-			append_bytes(dest, htonll(length));
+			append_bytes(dest, htonl(length));
 			break;
 		case TYPE_USER_JOIN:
 			append_bytes(dest, &name, FIELD_SIZE_USER_NAME);

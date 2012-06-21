@@ -52,22 +52,22 @@ class Message
 			TYPE_USER_QUIT // server -> client only (a user disconnected)
 		};
 		
-		const uint64_t
+		const size_t
 			FIELD_SIZE_BYTE = 1,
 			FIELD_SIZE_ID = 4,
 			FIELD_SIZE_DOC_NAME = 128,
 			FIELD_SIZE_HASH = 20,
-			FIELD_SIZE_SIZE = 8,
+			FIELD_SIZE_SIZE = 4,
 			FIELD_SIZE_STATUS = 1,
 			FIELD_SIZE_TYPE = 1,
 			FIELD_SIZE_USER_NAME = 64;
 		
 		std::vector<char>	bytes;
 		std::vector<char>	hash;
-		uint64_t			length;
-		uint32_t		 	id;
+		int32_t				length;
+		int32_t				id;
 		std::vector<char>	name;
-		uint64_t			position;
+		int32_t				position;
 		ClientSptr			source;
 		MessageStatus		status;
 		MessageType	 	 	type;
@@ -77,6 +77,9 @@ class Message
 
 		Message operator=(const Message &) = delete;
 		
+		/**
+			Checks whether this is an empty message.
+		**/
 		inline bool is_empty() const;
 		/**
 			Attempts to parse a bytestream sent by the given client to this Message object.
@@ -100,12 +103,23 @@ class Message
 		void send_to(ClientCollection &clients) const;
 	
 	private:
+		/**
+			Auxiliary function that appends a byte sequence to the given vector.
+				 dest - char(/byte) vector to append the bytes to
+				 src
+					source, i.e. either to pointer to the first byte or the raw value whose bytes
+					shall be appended
+				*length [#] - number of bytes to append
+			=>	`dest`
+		**/
 		template<typename T>
-		static inline void append_bytes(std::vector<char> &dest, const T *src, size_t length = 0);
+		static inline std::vector<char> &append_bytes(std::vector<char> &dest, const T *src,
+			size_t length = 0);
 		template<typename T>
-		static inline void append_bytes(std::vector<char> &dest, const T src, size_t length = 0);
-		static inline uint64_t htonll(uint64_t hostlonglong);
-		static inline uint64_t ntohll(uint64_t netlonglong);
+		static inline std::vector<char> &append_bytes(std::vector<char> &dest, const T src,
+			size_t length = 0);
+		// static inline uint64_t htonll(uint64_t hostlonglong);
+		// static inline uint64_t ntohll(uint64_t netlonglong);
 
 		/**
 			Generates a bytesteam from this Message that can be sent to one or more Clients.
