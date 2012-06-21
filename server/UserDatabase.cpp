@@ -56,7 +56,7 @@ UserDatabase::UserDatabase(std::shared_ptr<Database> database,
 
 void UserDatabase::check(std::string const &name, password_hash_t const &password_hash)
 {
-	user_interface_.printf("checking credentials: \"%s\"\n");
+	user_interface_.printf("checking credentials: \"%s\"\n", name);
 
 	Database::results_t const result = database_->execute_sql(g_sql_queries[1], name);
 
