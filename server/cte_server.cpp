@@ -36,7 +36,7 @@ int main(int argc, char **argv)
 	typedef UserInterfaceSingleton<NCursesUserInterface> NCursesUserInterfaceSingleton;
 
 	auto &ui = NCursesUserInterfaceSingleton::get_instance();
-	auto db = std::make_shared<SQLiteDatabase>(SQLiteDatabase::from_path("./db.sql"));
+	auto db = std::make_shared<SQLiteDatabase>(SQLiteDatabase::from_path("./user.sql"));
 	UserDatabase user_db(db, ui);
 	CommandProcessor command_processor(ui, user_db);
 	int ipc_sockets[2];
