@@ -23,10 +23,13 @@ class UserInterface;
 namespace userdatabase_errors
 {
 	struct UserDatabaseError
-		: erAlreadyPresentError
-		: UserDatabaseError
+		: database_errors::Failure
+	{
+		UserDatabaseError(std::string const &message);
+	};
+
 	struct UserAlreadyPresentError
-		: UserDatabaseError
+		: database_errors::ConstraintError
 	{
 		UserAlreadyPresentError(std::string const &message);
 	};

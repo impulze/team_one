@@ -31,8 +31,13 @@ namespace
 
 namespace userdatabase_errors
 {
+	UserDatabaseError::UserDatabaseError(std::string const &message)
+		: database_errors::Failure(message)
+	{
+	}
+
 	UserAlreadyPresentError::UserAlreadyPresentError(std::string const &message)
-		: std::runtime_error(message)
+		: database_errors::ConstraintError(message)
 	{
 	}
 }
