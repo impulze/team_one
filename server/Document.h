@@ -2,6 +2,7 @@
 #define DOCUMENT_H_INCLUDED
 
 #include <array>
+#include <cstdint>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -46,7 +47,7 @@ public:
 	typedef std::array<char, 20> hash_t;
 
 	/**
-	 * Move a ddocument.
+	 * Move a document.
 	 *
 	 * The resources are moved and you can no longer expect
 	 * any useful state of this object after moving it.
@@ -102,14 +103,26 @@ public:
 	 */
 	static std::vector<std::string> list_documents();
 
+	/**
+	 * Obtain the id.
+	 *
+	 * @return The id passed in the constructor.
+	 */
+	std::int32_t get_id() const
+	{
+		return id_;
+	}
+
 private:
 	/**
 	 * Create a document with a linux specific file descriptor.
 	 *
 	 * @param fd The descriptor for this document.
 	 * @param name The name the document is referenced by.
+	 * @param id The id for this document. Keep in mind that once the
+	 *           maximum id is reached, it starts at 0 again.
 	 */
-	explicit Document(int fd, std::string const &name);
+	explicit Document(int fd, std::string const &name, std::int32_t id);
 
 	/**
 	 * Delete the default copy constructor, making copying a document object
@@ -127,6 +140,7 @@ private:
 	int fd_;
 	std::string const name_;
 	static std::string const directory_;
+	std::int32_t id_;
 };
 
 #endif

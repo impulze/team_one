@@ -20,6 +20,11 @@
 
 std::string const Document::directory_ = "./documents/";
 
+namespace
+{
+	std::int32_t g_current_global_document_id = 1;
+}
+
 namespace document_errors
 {
 	DocumentError::DocumentError(std::string const &message)
@@ -87,7 +92,18 @@ Document Document::create(std::string const &name, bool overwrite)
 		throw DocumentError(strm.str());
 	}
 
-	return Document(fd, name);
+	Document doc(fd, name, g_current_global_document_id);
+
+	if (g_current_global_document_id == std::numeric_limits<std::int32_t>::max())
+	{
+		g_current_global_document_id = 1;
+	}
+	else
+	{
+		g_current_global_document_id++;
+	}
+
+	return doc;
 }
 
 Document Document::open(std::string const &name)
@@ -120,7 +136,18 @@ Document Document::open(std::string const &name)
 		throw DocumentError(strm.str());
 	}
 
-	return Document(fd, name);
+	Document doc(fd, name, g_current_global_document_id);
+
+	if (g_current_global_document_id == std::numeric_limits<std::int32_t>::max())
+	{
+		g_current_global_document_id = 1;
+	}
+	else
+	{
+		g_current_global_document_id++;
+	}
+
+	return doc;
 }
 
 void Document::remove()
@@ -241,10 +268,11 @@ std::vector<std::string> Document::list_documents()
 	return list;
 }
 
-Document::Document(int fd, std::string const &name)
+Document::Document(int fd, std::string const &name, std::int32_t id)
 try
 	: fd_(fd),
-	  name_(name)
+	  name_(name),
+	  id_(id)
 {
 	off_t const end = ::lseek(fd, 0, SEEK_END);
 
