@@ -45,6 +45,16 @@ namespace userinterface_errors
 	{
 		InvalidCommandError(std::string const &message);
 	};
+
+	/**
+	 * Represent an error which happens if a command was passed that didn't
+	 * execute correct.
+	 */
+	struct CommandFailedError
+		: Failure
+	{
+		CommandFailedError(std::string const &message);
+	};
 }
 
 class UserInterface

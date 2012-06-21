@@ -4,6 +4,7 @@
 
 #include <openssl/sha.h>
 
+#include <sstream>
 #include <stdexcept>
 
 /**
@@ -19,7 +20,7 @@ namespace
 		"CREATE TABLE IF NOT EXISTS UserDatabase ("
 			"u_id INTEGER NOT NULL,"
 			"u_name VARCHAR(64) NOT NULL,"
-			"u_pwhash VARCHAR(20) NOT NULL,"
+			"u_pwhash BLOB NOT NULL,"
 			"PRIMARY KEY(u_id),"
 			"UNIQUE(u_name)"
 		");",
@@ -34,16 +35,22 @@ UserDatabase::UserDatabase(std::shared_ptr<Database> database,
 	: database_(database),
 	  user_interface_(user_interface)
 {
+	user_interface.printf("user database loading: loading\n");
+
 	database_->execute_sql(g_sql_queries[0]);
-	user_interface.printf("user database loaded\n");
+
+	user_interface.printf("user database loading: success\n");
 }
 
 void UserDatabase::check(std::string const &name, password_hash_t const &password_hash)
 {
+	user_interface_.printf("checking credentials: \"%s\"\n");
+
 	Database::results_t const result = database_->execute_sql(g_sql_queries[1], name);
 
-	user_interface_.printf("user check\n");
+	user_interface_.printf("checking credentials: succes\n");
 
+	// debugging
 	for (auto const &row: result)
 	{
 		for (auto const &key_value: row)
@@ -51,18 +58,27 @@ void UserDatabase::check(std::string const &name, password_hash_t const &passwor
 			user_interface_.printf("%s: %s\n", key_value.first, key_value.second);
 		}
 	}
-
-	throw std::runtime_error("STUB UserDatabase::check");
 }
 
 void UserDatabase::create(std::string const &name, password_hash_t const &password_hash)
 {
-	std::string const password_hash_string(password_hash.begin(), password_hash.end());
+	std::ostringstream password_hash_readable;
 
-	Database::results_t const result = database_->execute_sql(g_sql_queries[2], name, password_hash[0]);
+	for (auto const &ub: password_hash)
+	{
+		password_hash_readable
+			<< std::hex
+			<< ((ub & 0xf0) >> 4)
+			<< ((ub & 0x0f) >> 0);
+	}
 
-	user_interface_.printf("user create\n");
+	user_interface_.printf("adding user: \"%s\", [password_hash: \"%s\"\n", name, password_hash_readable.str());
 
+	Database::results_t const result = database_->execute_sql(g_sql_queries[2], name, password_hash);
+
+	user_interface_.printf("adding user: success\n");
+
+	// debugging
 	for (auto const &row: result)
 	{
 		for (auto const &key_value: row)
@@ -70,16 +86,25 @@ void UserDatabase::create(std::string const &name, password_hash_t const &passwo
 			user_interface_.printf("%s: %s\n", key_value.first, key_value.second);
 		}
 	}
+}
 
-	throw std::runtime_error("STUB UserDatabase::create");
+void UserDatabase::create(std::string const &name, std::string const &password)
+{
+	std::vector<char> const password_bytes(password.begin(), password.end());
+	auto const password_hash = hash_bytes(password_bytes);
+
+	create(name, password_hash);
 }
 
 void UserDatabase::remove(std::string const &name)
 {
+	user_interface_.printf("remove user: \"%s\"\n", name);
+
 	Database::results_t const result = database_->execute_sql(g_sql_queries[3], name);
 
-	user_interface_.printf("user delete\n");
+	user_interface_.printf("remove user: success\n");
 
+	// debugging
 	for (auto const &row: result)
 	{
 		for (auto const &key_value: row)
@@ -87,8 +112,6 @@ void UserDatabase::remove(std::string const &name)
 			user_interface_.printf("%s: %s\n", key_value.first, key_value.second);
 		}
 	}
-
-	throw std::runtime_error("STUB UserDatabase::remove");
 }
 
 UserDatabase::password_hash_t UserDatabase::hash_bytes(std::vector<char> const &bytes)

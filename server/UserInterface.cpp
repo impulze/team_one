@@ -21,6 +21,11 @@ namespace userinterface_errors
 		: Failure(message)
 	{
 	}
+
+	CommandFailedError::CommandFailedError(std::string const &message)
+		: Failure(message)
+	{
+	}
 }
 
 UserInterface::UserInterface()
@@ -109,6 +114,10 @@ void UserInterface::process_line()
 			catch (userinterface_errors::InvalidCommandError const &error)
 			{
 				printf("invalid command\n%s\n", error.what());
+			}
+			catch (userinterface_errors::CommandFailedError const &error)
+			{
+				printf("command failed\n%s\n", error.what());
 			}
 		}
 	}

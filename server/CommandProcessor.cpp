@@ -35,23 +35,18 @@ void CommandProcessor::adduser(command_arguments_t const &parameters)
 		throw userinterface_errors::InvalidCommandError("Syntax: adduser <name> <password>");
 	}
 
-	user_interface_.printf("adding user: \"%ls\"\n", parameters[0]);
-
 	std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+	std::string const nonwide_name = converter.to_bytes(parameters[0]);
 	std::string const nonwide_password = converter.to_bytes(parameters[1]);
-	std::vector<char> const nonwide_password_bytes(nonwide_password.begin(), nonwide_password.end());
-	auto const password_hash = user_database_.hash_bytes(nonwide_password_bytes);
-	std::ostringstream password_hash_readable;
 
-	for (auto const &ub: password_hash)
+	try
 	{
-		password_hash_readable
-			<< std::hex
-			<< ((ub & 0xf0) >> 4)
-			<< ((ub & 0x0f) >> 0);
+		user_database_.create(nonwide_name, nonwide_password);
 	}
-
-	user_interface_.printf("added user: \"%ls\" [password hash: %s]\n", parameters[0], password_hash_readable.str());
+	catch (database_errors::Failure const &error)
+	{
+		throw userinterface_errors::CommandFailedError(error.what());
+	}
 }
 
 void CommandProcessor::deluser(command_arguments_t const &parameters)
@@ -61,7 +56,18 @@ void CommandProcessor::deluser(command_arguments_t const &parameters)
 		throw userinterface_errors::InvalidCommandError("Syntax: deluser <name>");
 	}
 
-	user_interface_.printf("deleting user: \"%ls\"\n", parameters[0]);
+
+	std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+	std::string const nonwide_name = converter.to_bytes(parameters[0]);
+
+	try
+	{
+		user_database_.remove(nonwide_name);
+	}
+	catch (database_errors::Failure const &error)
+	{
+		throw userinterface_errors::CommandFailedError(error.what());
+	}
 }
 
 void CommandProcessor::quit(command_arguments_t const &)

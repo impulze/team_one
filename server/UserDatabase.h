@@ -52,6 +52,15 @@ public:
 	void create(std::string const &name, password_hash_t const &password_hash);
 
 	/**
+	 * Create a user in the database with the specified name and plain password.
+	 *
+	 * @param name The name the user is referenced by.
+	 * @param password The plain text password.
+	 */
+	void create(std::string const &name, std::string const &password);
+
+
+	/**
 	 * Delete a user in the database with the specified name.
 	 *
 	 * @param Name The name the user is referenced by.
