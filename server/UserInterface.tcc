@@ -52,7 +52,6 @@ namespace
 		: string_printf_forwarder<std::wstring>
 	{
 	};
-
 }
 
 template <class... T>

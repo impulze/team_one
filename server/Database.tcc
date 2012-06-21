@@ -14,13 +14,43 @@ namespace
 		}
 	};
 
-	template <>
-	struct sql_forwarder<std::string const &>
+	template <class T>
+	struct string_sql_forwarder
 	{
-		static char const *forward(std::string const &string)
+		static typename T::value_type const *forward(T const &string)
 		{
 			return string.c_str();
 		}
+	};
+
+	template <>
+	struct sql_forwarder<std::string const &>
+		: string_sql_forwarder<std::string>
+	{
+	};
+
+	template <>
+	struct sql_forwarder<std::string &>
+		: string_sql_forwarder<std::string>
+	{
+	};
+
+	template <>
+	struct sql_forwarder<std::string>
+		: string_sql_forwarder<std::string>
+	{
+	};
+
+	template <>
+	struct sql_forwarder<std::wstring const &>
+		: string_sql_forwarder<std::wstring>
+	{
+	};
+
+	template <>
+	struct sql_forwarder<std::wstring>
+		: string_sql_forwarder<std::wstring>
+	{
 	};
 }
 
