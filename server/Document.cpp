@@ -178,7 +178,10 @@ Document::hash_t Document::hash() const
 	hash_t sha1_hash;
 
 	// should never fail
-	::SHA1(reinterpret_cast<unsigned char const *>(&contents_[0]), contents_.size(), &sha1_hash[0]);
+	::SHA1(
+		reinterpret_cast<unsigned char const *>(&contents_[0]),
+		contents_.size(),
+		reinterpret_cast<unsigned char *>(&sha1_hash[0]));
 
 	return sha1_hash;
 }

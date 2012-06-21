@@ -43,7 +43,7 @@ namespace document_errors
 class Document
 {
 public:
-	typedef std::array<unsigned char, 20> hash_t;
+	typedef std::array<char, 20> hash_t;
 
 	/**
 	 * Move a ddocument.

@@ -124,7 +124,10 @@ UserDatabase::password_hash_t UserDatabase::hash_bytes(std::vector<char> const &
 	password_hash_t sha1_hash;
 
 	// should never fail
-	::SHA1(reinterpret_cast<unsigned char const *>(&bytes[0]), bytes.size(), &sha1_hash[0]);
+	::SHA1(
+		reinterpret_cast<unsigned char const *>(&bytes[0]),
+		bytes.size(),
+		reinterpret_cast<unsigned char *>(&sha1_hash[0]));
 
 	return sha1_hash;
 }

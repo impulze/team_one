@@ -23,7 +23,7 @@ class UserInterface;
 class UserDatabase
 {
 public:
-	typedef std::array<unsigned char, 20> password_hash_t;
+	typedef std::array<char, 20> password_hash_t;
 
 	/**
 	 * Construct the user database.
