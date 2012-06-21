@@ -118,7 +118,7 @@ void UserDatabase::create(std::string const &name, Hash::hash_t const &password_
 
 	try
 	{
-		Database::results_t const result = database_->execute_sql(g_sql_queries[2], name, password_hash);
+		Database::results_t const result = database_->execute_sql(g_sql_queries[2], name, password_hash_readable);
 
 		// debugging
 		for (auto const &row: result)
