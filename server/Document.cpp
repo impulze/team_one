@@ -6,7 +6,6 @@
 
 #include <dirent.h>
 #include <fcntl.h>
-#include <openssl/sha.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -195,22 +194,14 @@ void Document::save()
 	}
 }
 
-Document::hash_t Document::hash() const
+Hash::hash_t Document::hash() const
 {
 	if (contents_.size() >= std::numeric_limits<unsigned long>::max())
 	{
 		throw std::runtime_error("unable to create hash because document is too big");
 	}
 
-	hash_t sha1_hash;
-
-	// should never fail
-	::SHA1(
-		reinterpret_cast<unsigned char const *>(&contents_[0]),
-		contents_.size(),
-		reinterpret_cast<unsigned char *>(&sha1_hash[0]));
-
-	return sha1_hash;
+	return Hash::hash_bytes(contents_);
 }
 
 std::vector<std::string> Document::list_documents()

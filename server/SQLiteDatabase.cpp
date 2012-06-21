@@ -94,6 +94,7 @@ bool SQLiteDatabase::complete_sql(std::string const &statement) const
 SQLiteDatabase::results_t SQLiteDatabase::execute_sqlv(char const *format, ...)
 {
 	using database_errors::SQLiteError;
+	using database_errors::SQLiteConstraintError;
 
 	va_list list;
 	results_t results;
@@ -140,14 +141,19 @@ SQLiteDatabase::results_t SQLiteDatabase::execute_sqlv(char const *format, ...)
 
 	if (result)
 	{
+		std::string failure = "unknown SQLite error";
+
 		if (sqlite_error_string)
 		{
-			throw SQLiteError<>(sqlite_error_string);
+			failure = sqlite_error_string;
 		}
-		else
+
+		if (result == 19)
 		{
-			throw SQLiteError<>("unknown SQLite error");
+			throw SQLiteConstraintError(failure);
 		}
+
+		throw SQLiteError<>(failure);
 	}
 
 	return results;

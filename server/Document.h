@@ -1,6 +1,8 @@
 #ifndef DOCUMENT_H_INCLUDED
 #define DOCUMENT_H_INCLUDED
 
+#include "Hash.h"
+
 #include <array>
 #include <cstdint>
 #include <stdexcept>
@@ -44,8 +46,6 @@ namespace document_errors
 class Document
 {
 public:
-	typedef std::array<char, 20> hash_t;
-
 	/**
 	 * Move a document.
 	 *
@@ -84,7 +84,7 @@ public:
 	 *
 	 * @return The SHA-1 hash (20 bytes) of the contents.
 	 */
-	hash_t hash() const;
+	Hash::hash_t hash() const;
 
 	/**
 	 * Obtain the bytes of the document.

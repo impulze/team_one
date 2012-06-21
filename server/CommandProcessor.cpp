@@ -26,6 +26,14 @@ CommandProcessor::CommandProcessor(UserInterface &user_interface,
 		user_interface_.register_processor(
 			L"quit",
 			std::bind(&CommandProcessor::quit, this, _1)));
+	registered_processors_.push_back(
+		user_interface_.register_processor(
+			L"check_password",
+			std::bind(&CommandProcessor::check_password, this, _1)));
+	registered_processors_.push_back(
+		user_interface_.register_processor(
+			L"check_password_hash",
+			std::bind(&CommandProcessor::check_password_hash, this, _1)));
 }
 
 void CommandProcessor::adduser(command_arguments_t const &parameters)
@@ -85,7 +93,7 @@ void CommandProcessor::check_password(command_arguments_t const &parameters)
 	try
 	{
 		std::vector<char> hash_bytes(nonwide_password.begin(), nonwide_password.end());
-		UserDatabase::password_hash_t const hash = user_database_.hash_bytes(hash_bytes);
+		Hash::hash_t const hash = Hash::hash_bytes(hash_bytes);
 		user_database_.check(nonwide_name, hash);
 	}
 	catch (database_errors::Failure const &error)
@@ -108,18 +116,7 @@ void CommandProcessor::check_password_hash(command_arguments_t const &parameters
 
 	try
 	{
-		UserDatabase::password_hash_t hash;
-
-		if (nonwide_password_hash.size() != 40)
-		{
-			throw userinterface_errors::CommandFailedError("wrong hash format, should be 40 chars long");
-		}
-
-		for (std::string::size_type i = 0; i < nonwide_password_hash.size(); i += 2)
-		{
-			hash[i / 2] = (nonwide_password_hash[i] << 4) | nonwide_password_hash[i + 1];
-		}
-
+		Hash::hash_t const hash = Hash::string_to_hash(nonwide_password_hash);
 		user_database_.check(nonwide_name, hash);
 	}
 	catch (database_errors::Failure const &error)

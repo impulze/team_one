@@ -2,8 +2,6 @@
 
 #include "UserInterface.h"
 
-#include <openssl/sha.h>
-
 #include <sstream>
 #include <stdexcept>
 
@@ -20,24 +18,35 @@ namespace
 		"CREATE TABLE IF NOT EXISTS UserDatabase ("
 			"u_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,"
 			"u_name VARCHAR(64) NOT NULL,"
-			"u_pwhash BLOB NOT NULL,"
+			"u_pwhash VARCHAR(40) NOT NULL,"
 			"UNIQUE(u_name)"
 		");",
-		"SELECT u_pwhash FROM UserDatabase WHERE u_name = %Q;",
+		"SELECT u_id, u_pwhash FROM UserDatabase WHERE u_name = %Q;",
 		"INSERT INTO UserDatabase (u_name, u_pwhash) VALUES (%Q, %Q);",
 		"DELETE FROM UserDatabase WHERE p_name = %Q;",
+		"SELECT MAX(u_id) FROM UserDatabase",
 	};
 }
 
 namespace userdatabase_errors
 {
-	UserDatabaseError::UserDatabaseError(std::string const &message)
+	Failure::Failure(std::string const &message)
 		: database_errors::Failure(message)
 	{
 	}
 
 	UserAlreadyPresentError::UserAlreadyPresentError(std::string const &message)
 		: database_errors::ConstraintError(message)
+	{
+	}
+
+	UserDoesntExistError::UserDoesntExistError(std::string const &message)
+		: Failure(message)
+	{
+	}
+
+	InvalidPasswordError::InvalidPasswordError(std::string const &message)
+		: Failure(message)
 	{
 	}
 }
@@ -54,37 +63,58 @@ UserDatabase::UserDatabase(std::shared_ptr<Database> database,
 	user_interface.printf("user database loading: success\n");
 }
 
-void UserDatabase::check(std::string const &name, password_hash_t const &password_hash)
+std::int32_t UserDatabase::check(std::string const &name, Hash::hash_t const &password_hash)
 {
 	user_interface_.printf("checking credentials: \"%s\"\n", name);
 
-	Database::results_t const result = database_->execute_sql(g_sql_queries[1], name);
+	{
+		Database::results_t result = database_->execute_sql(g_sql_queries[4]);
+
+		if (result.size() != 1)
+		{
+			throw userdatabase_errors::Failure("no user in database yet");
+		}
+
+		if (result[0].find("MAX(u_id)") == result[0].end())
+		{
+			throw userdatabase_errors::Failure("no maximum user id");
+		}
+
+		std::int32_t maximum_user_id = std::stoi(result[0]["MAX(u_id)"]);
+
+		if (maximum_user_id == std::numeric_limits<std::int32_t>::max())
+		{
+			throw userdatabase_errors::Failure("too many users");
+		}
+	}
+
+	Database::results_t result = database_->execute_sql(g_sql_queries[1], name);
+
+	if (result.size() != 1)
+	{
+		throw userdatabase_errors::UserDoesntExistError("user not in database");
+	}
+
+	if (result[0].find("u_pwhash") == result[0].end() || result[0].find("u_id") == result[0].end())
+	{
+		throw userdatabase_errors::Failure("no password hash or user id for user");
+	}
+
+	if (Hash::string_to_hash(result[0]["u_pwhash"]) != password_hash)
+	{
+		throw userdatabase_errors::InvalidPasswordError("invalid password");
+	}
 
 	user_interface_.printf("checking credentials: succes\n");
 
-	// debugging
-	for (auto const &row: result)
-	{
-		for (auto const &key_value: row)
-		{
-			user_interface_.printf("%s: %s\n", key_value.first, key_value.second);
-		}
-	}
+	return std::stoi(result[0]["u_id"]);
 }
 
-void UserDatabase::create(std::string const &name, password_hash_t const &password_hash)
+void UserDatabase::create(std::string const &name, Hash::hash_t const &password_hash)
 {
-	std::ostringstream password_hash_readable;
+	std::string const password_hash_readable = Hash::hash_to_string(password_hash);
 
-	for (auto const &ub: password_hash)
-	{
-		password_hash_readable
-			<< std::hex
-			<< ((ub & 0xf0) >> 4)
-			<< ((ub & 0x0f) >> 0);
-	}
-
-	user_interface_.printf("adding user: \"%s\", [password_hash: \"%s\"\n", name, password_hash_readable.str());
+	user_interface_.printf("adding user: \"%s\", [password_hash: \"%s\"\n", name, password_hash_readable);
 
 	try
 	{
@@ -99,13 +129,11 @@ void UserDatabase::create(std::string const &name, password_hash_t const &passwo
 			}
 		}
 	}
-	catch (...)
+	catch (database_errors::ConstraintError const &)
 	{
 		std::ostringstream strm;
 
 		strm << "user \"" << name << "\" already present in database.";
-
-		user_interface_.printf("adding user: failed (%s)\n", strm.str());
 
 		throw userdatabase_errors::UserAlreadyPresentError(strm.str());
 	}
@@ -117,7 +145,7 @@ void UserDatabase::create(std::string const &name, password_hash_t const &passwo
 void UserDatabase::create(std::string const &name, std::string const &password)
 {
 	std::vector<char> const password_bytes(password.begin(), password.end());
-	auto const password_hash = hash_bytes(password_bytes);
+	auto const password_hash = Hash::hash_bytes(password_bytes);
 
 	create(name, password_hash);
 }
@@ -138,22 +166,4 @@ void UserDatabase::remove(std::string const &name)
 			user_interface_.printf("%s: %s\n", key_value.first, key_value.second);
 		}
 	}
-}
-
-UserDatabase::password_hash_t UserDatabase::hash_bytes(std::vector<char> const &bytes)
-{
-	if (bytes.size() >= std::numeric_limits<unsigned long>::max())
-	{
-		throw std::runtime_error("unable to create hash because byte container is too big");
-	}
-
-	password_hash_t sha1_hash;
-
-	// should never fail
-	::SHA1(
-		reinterpret_cast<unsigned char const *>(&bytes[0]),
-		bytes.size(),
-		reinterpret_cast<unsigned char *>(&sha1_hash[0]));
-
-	return sha1_hash;
 }

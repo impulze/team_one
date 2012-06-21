@@ -2,11 +2,11 @@
 #define USERDATABASE_H_INCLUDED
 
 #include "Database.h"
+#include "Hash.h"
 
-#include <array>
+#include <cstdint>
 #include <memory>
 #include <string>
-#include <vector>
 
 /**
  * @file UserDatabase.h
@@ -22,10 +22,10 @@ class UserInterface;
 
 namespace userdatabase_errors
 {
-	struct UserDatabaseError
+	struct Failure
 		: database_errors::Failure
 	{
-		UserDatabaseError(std::string const &message);
+		Failure(std::string const &message);
 	};
 
 	struct UserAlreadyPresentError
@@ -33,13 +33,23 @@ namespace userdatabase_errors
 	{
 		UserAlreadyPresentError(std::string const &message);
 	};
+
+	struct UserDoesntExistError
+		: Failure
+	{
+		UserDoesntExistError(std::string const &message);
+	};
+
+	struct InvalidPasswordError
+		: Failure
+	{
+		InvalidPasswordError(std::string const &message);
+	};
 }
 
 class UserDatabase
 {
 public:
-	typedef std::array<char, 20> password_hash_t;
-
 	/**
 	 * Construct the user database.
 	 *
@@ -55,7 +65,7 @@ public:
 	 * @param name The name the user is referenced by.
 	 * @param password_hash The password SHA-1 hash that was generated.
 	 */
-	void check(std::string const &name, password_hash_t const &password_hash);
+	std::int32_t check(std::string const &name, Hash::hash_t const &password_hash);
 
 	/**
 	 * Create a user in the database with the specified name and password hash.
@@ -64,7 +74,7 @@ public:
 	 * @param name The name the user is referenced by.
 	 * @param password_hash The password SHA-1 hash that was generated.
 	 */
-	void create(std::string const &name, password_hash_t const &password_hash);
+	void create(std::string const &name, Hash::hash_t const &password_hash);
 
 	/**
 	 * Create a user in the database with the specified name and plain password.
@@ -74,21 +84,12 @@ public:
 	 */
 	void create(std::string const &name, std::string const &password);
 
-
 	/**
 	 * Delete a user in the database with the specified name.
 	 *
 	 * @param Name The name the user is referenced by.
 	 */
 	void remove(std::string const &name);
-
-	/**
-	 * Create a hash for the specificied byte sequence.
-	 *
-	 * @param bytes A sequence of bytes as data input for the hash algorithm.
-	 * @return The hash sequence for the specified bytes.
-	 */
-	password_hash_t hash_bytes(std::vector<char> const &bytes);
 
 private:
 	std::shared_ptr<Database> database_;
