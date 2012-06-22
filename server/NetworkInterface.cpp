@@ -14,8 +14,18 @@
 #include "exceptions.h"
 #include "NetworkInterface.h"
 
+NetworkInterface *NetworkInterface::instance = NULL;
+
+NetworkInterface *NetworkInterface::get_current_instance(void)
+{ return instance; }
+
 NetworkInterface::NetworkInterface(int port, int backlog)
 {
+	// check if already instantiated
+	if (instance != NULL)
+	{ throw Exception::AlreadyInstantiated("only one NetworkInterface instance allowed"); }
+	instance = this;
+
 	// create a socket for listening
 	this->listener = socket(AF_INET, SOCK_STREAM, 0);
 	if (this->listener == -1)
@@ -39,8 +49,14 @@ NetworkInterface::NetworkInterface(int port, int backlog)
 	{ throw Exception::ErrnoError("failed to listen", "listen"); }
 }
 
+NetworkInterface::~NetworkInterface(void)
+{ instance = NULL; }
+
 void NetworkInterface::add_message_handler(const NetworkMessageHandler handler)
 { message_handlers.push_front(handler); }
+
+void NetworkInterface::broadcast_message(const Message &message) const
+{ message.send_to(clients); }
 
 void NetworkInterface::remove_message_handler(const NetworkMessageHandler handler)
 { message_handlers.remove(handler); }

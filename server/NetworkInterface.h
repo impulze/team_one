@@ -14,20 +14,33 @@
 
 typedef void (*NetworkMessageHandler)(const Message &);
 
+/**
+	IMPORTANT NOTE:
+		Currently it's only allowed to instantiate this class ONCE.
+**/
 class NetworkInterface
 {
 	public:
+		/**
+			Retrieves the current instance.
+			=>	<no instance created yet> `NULL`
+			=>	`NetworkInterface::instance`
+		**/
+		static NetworkInterface *get_current_instance(void);
+
 		/**
 			Standard constructor.
 			Creates and binds a listening socket and sets it to listening state.
 				 port - port to bind on
 				*backlog -> <sys/socket.h> listen(backlog)
+			=#	Exception::AlreadyInstantiated - an instance of this class already exists
 			=#	Exception::ErrnoError - listening socket creation failed
 			=#	Exception::ErrnoError - network address structure generation failed
 			=#	Exception::ErrnoError - listening socket binding failed
 			=#	Exception::ErrnoError - listening failed
 		**/
 		NetworkInterface(int port, int backlog = 4);
+		~NetworkInterface(void);
 		
 		/**
 			Adds a message handler to this NetworkInterface. Each added handler will get called for
@@ -39,6 +52,12 @@ class NetworkInterface
 				handler
 		**/
 		void add_message_handler(const NetworkMessageHandler handler);
+		/**
+			Broadcasts a Message to all connected Clients.
+				message
+			=#	Message::send_to(ClientCollection &)
+		**/
+		void broadcast_message(const Message &message) const;
 		/**
 			Removes all occurrences of the specified handler from this' handler list.
 				handler
@@ -53,9 +72,11 @@ class NetworkInterface
 		void run(int ipc_socket);
 	
 	private:
-		ClientCollection							clients;
-		int											listener;
-		std::forward_list<NetworkMessageHandler>	message_handlers;
+		static NetworkInterface						*instance;
+
+		ClientCollection							 clients;
+		int											 listener;
+		std::forward_list<NetworkMessageHandler>	 message_handlers;
 };
 
 #endif
