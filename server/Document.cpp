@@ -50,8 +50,19 @@ namespace document_errors
 using namespace document_errors;
 
 Document::Document(Document &&other)
-	: contents_(std::move(other.contents_))
+	: contents_(std::move(other.contents_)),
+	  fd_(other.fd_),
+	  name_(std::move(other.name_)),
+	  id_(other.id_),
+	  document_closed_(other.document_closed_)
 {
+	// prevent the other destructor to call close
+	other.document_closed_ = true;
+}
+
+Document::~Document()
+{
+	close();
 }
 
 Document Document::create(std::string const &name, bool overwrite)
@@ -194,6 +205,15 @@ void Document::save()
 	}
 }
 
+void Document::close()
+{
+	if (!document_closed_)
+	{
+		::close(fd_);
+		document_closed_ = true;
+	}
+}
+
 Hash::hash_t Document::hash() const
 {
 	if (contents_.size() >= std::numeric_limits<unsigned long>::max())
@@ -263,7 +283,8 @@ Document::Document(int fd, std::string const &name, std::int32_t id)
 try
 	: fd_(fd),
 	  name_(name),
-	  id_(id)
+	  id_(id),
+	  document_closed_(false)
 {
 	off_t const end = ::lseek(fd, 0, SEEK_END);
 
@@ -293,6 +314,6 @@ try
 }
 catch (...)
 {
-	close(fd);
+	::close(fd);
 	throw;
 }

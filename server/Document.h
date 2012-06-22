@@ -55,6 +55,12 @@ public:
 	Document(Document &&);
 
 	/**
+	* Release all resources allocated by the document.
+	* Also calls close()
+	*/
+	~Document();
+
+	/**
 	 * Create a document by name.
 	 *
 	 * @param name The name the document is referenced by.
@@ -78,6 +84,11 @@ public:
 	 * Save the document physically.
 	 */
 	void save();
+
+	/**
+	 * Close the document.
+	 */
+	void close();
 
 	/**
 	 * Create a SHA-1 hash for this document and return it.
@@ -141,6 +152,7 @@ private:
 	std::string const name_;
 	static std::string const directory_;
 	std::int32_t id_;
+	bool document_closed_;
 };
 
 #endif
