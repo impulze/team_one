@@ -65,6 +65,11 @@ public:
 	 *
 	 * @param name The name the document is referenced by.
 	 * @param overwrite Allow overwriting if the document exists.
+	 * @throws DocumentAlreadyExistsError If the document does exists and overwrite is
+	 *                                    false.
+	 * @throws DocumentPermissionsError If the file would have to be created but the
+	 *                                  creater lacks sufficient permissions.
+	 * @throws DocumentError If creating fails for other reasons.
 	 */
 	static Document create(std::string const &name, bool overwrite = false);
 
@@ -72,16 +77,40 @@ public:
 	 * Open a document by name.
 	 *
 	 * @param name The name the document is referenced by.
+	 * @return The Document instance.
+	 * @throws DocumentDoesntExistError If the document doesn't exist.
+	 * @throws DocumentPermissionsError If the opener lacks sufficient permissions to
+	 *                                  open the file.
+	 * @throws DocumentError If opening fails for other reasons.
 	 */
 	static Document open(std::string const &name);
 
 	/**
+	 * Check if a document is empty.
+	 *
+	 * @param name The name the document is referenced by.
+	 * @return true if empty, false otherwise.
+	 * @throws DocumentDoesntExistError If the document doesn't exist.
+	 * @throws DocumentPermissionsError If the opener lacks sufficient permissions to
+	 *                                  open the file.
+	 * @throws DocumentError If opening fails for other reasons.
+	 */
+	static bool is_empty(std::string const &name);
+
+	/**
 	 * Remove the document physically.
+	 *
+	 * @throws DocumentDoesntExistError If the document doesn't exist.
+	 * @throws DocumentPermissionsError If the remover lacks sufficient permissions to
+	 *                                  remove the file.
+	 * @throws DocumentError If removing fails for other reasons.
 	 */
 	void remove();
 
 	/**
 	 * Save the document physically.
+	 *
+	 * @throws DocumentError If not all data could be copied.
 	 */
 	void save();
 
@@ -100,7 +129,7 @@ public:
 	/**
 	 * Obtain the bytes of the document.
 	 *
-	 * @returnA reference to the vector with all the bytes of the document.
+	 * @return A reference to the vector with all the bytes of the document.
 	 */
 	std::vector<char> &get_contents()
 	{
@@ -125,6 +154,18 @@ public:
 	}
 
 private:
+	/**
+	 * Open a document by name and return the file descriptor.
+	 *
+	 * @param name The name the document is referenced by.
+	 * @return The UNIX file descriptor.
+	 * @throws DocumentDoesntExistError If the document doesn't exist.
+	 * @throws DocumentPermissionsError If the opener lacks sufficient permissions to
+	 *                                  open the file.
+	 * @throws DocumentError If opening fails for other reasons.
+	 */
+	static int open_readable(std::string const &name);
+
 	/**
 	 * Create a document with a linux specific file descriptor.
 	 *

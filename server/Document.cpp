@@ -87,7 +87,7 @@ Document Document::create(std::string const &name, bool overwrite)
 		{
 			strm << "document already exists";
 
-			throw std::runtime_error(strm.str()); //DocumentAlreadyExistsError(strm.str());
+			throw DocumentAlreadyExistsError(strm.str());
 		}
 
 		if (errno == EACCES || errno == EROFS)
@@ -118,6 +118,36 @@ Document Document::create(std::string const &name, bool overwrite)
 
 Document Document::open(std::string const &name)
 {
+	int const fd = open_readable(name);
+
+	Document doc(fd, name, g_current_global_document_id);
+
+	if (g_current_global_document_id == std::numeric_limits<std::int32_t>::max())
+	{
+		g_current_global_document_id = 1;
+	}
+	else
+	{
+		g_current_global_document_id++;
+	}
+
+	return doc;
+}
+
+bool Document::is_empty(std::string const &name)
+{
+	int const fd = open_readable(name);
+
+	off_t const end = ::lseek(fd, 0, SEEK_END);
+
+	// should never fail
+	assert(end != static_cast<off_t>(-1));
+
+	return end == 0;
+}
+
+int Document::open_readable(std::string const &name)
+{
 	// using Linux API here because of error checking functionality
 	int const fd = ::open(name.c_str(), O_RDONLY);
 
@@ -146,18 +176,7 @@ Document Document::open(std::string const &name)
 		throw DocumentError(strm.str());
 	}
 
-	Document doc(fd, name, g_current_global_document_id);
-
-	if (g_current_global_document_id == std::numeric_limits<std::int32_t>::max())
-	{
-		g_current_global_document_id = 1;
-	}
-	else
-	{
-		g_current_global_document_id++;
-	}
-
-	return doc;
+	return fd;
 }
 
 void Document::remove()
