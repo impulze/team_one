@@ -55,8 +55,8 @@ NetworkInterface::~NetworkInterface(void)
 void NetworkInterface::add_message_handler(const NetworkMessageHandler handler)
 { message_handlers.push_front(handler); }
 
-void NetworkInterface::broadcast_message(const Message &message) const
-{ message.send_to(clients); }
+void NetworkInterface::broadcast_message(const Message &message, int32_t document_id) const
+{ message.send_to(clients, document_id); }
 
 void NetworkInterface::remove_message_handler(const NetworkMessageHandler handler)
 { message_handlers.remove(handler); }

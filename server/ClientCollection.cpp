@@ -17,12 +17,13 @@ Client &ClientCollection::accept_client(int listener)
 	return *client;
 }
 
-void ClientCollection::broadcast(const std::vector<char> &bytestream) const
+void ClientCollection::broadcast(const std::vector<char> &bytestream, int32_t document_id) const
 {
 	for (const std::pair<int, ClientSptr> &client: clients)
 	{
 		// TODO: add try-catch
-		client.second->send(bytestream);
+		if (document_id == 0 || client.second->active_document == document_id)
+		{ client.second->send(bytestream); }
 	}
 }
 

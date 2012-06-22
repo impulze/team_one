@@ -31,9 +31,12 @@ class ClientCollection
 		/**
 			Sends the given bytestream to all clients of this ClientCollection.
 				bytestream
+				document_id [#]
+					if this is not 0 the bytestream will only be sent to all clients that have the
+					document with this id activated
 			=#	Client::send(std::vector<char>)
 		**/
-		void broadcast(const std::vector<char> &bytestream) const;
+		void broadcast(const std::vector<char> &bytestream, int32_t document_id = 0) const;
 		/**
 			Adds all clients' sockets to the given fd_set using the makro FD_SET.
 				set

@@ -55,9 +55,10 @@ class NetworkInterface
 		/**
 			Broadcasts a Message to all connected Clients.
 				message
-			=#	Message::send_to(ClientCollection &)
+				document_id [#] -> Message::send_to(ClientCollection &, int32_t).document_id
+			=#	Message::send_to(ClientCollection, int32_t)
 		**/
-		void broadcast_message(const Message &message) const;
+		void broadcast_message(const Message &message, int32_t document_id = 0) const;
 		/**
 			Removes all occurrences of the specified handler from this' handler list.
 				handler
