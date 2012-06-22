@@ -64,7 +64,6 @@ void Message::receive_from(ClientSptr client)
 	{
 		case TYPE_DOC_ACTIVATE:
 		case TYPE_USER_LOGIN:
-			hash.resize(FIELD_SIZE_HASH);
 			client->receive(&hash, FIELD_SIZE_HASH);
 			break;
 		case TYPE_SYNC_DELETION:
@@ -149,7 +148,7 @@ std::vector<char> &Message::generate_bytestream(std::vector<char> &dest) const
 	return dest;
 }
 
-void Message::send_to(Client &client) const
+void Message::send_to(const Client &client) const
 {
 	// generate bytestream to send
 	std::vector<char> bytestream;
@@ -159,12 +158,12 @@ void Message::send_to(Client &client) const
 	client.send(bytestream);
 }
 
-void Message::send_to(ClientCollection &clients) const
+void Message::send_to(const ClientCollection &clients, int32_t document_id) const
 {
 	// generate bytestream to send
 	std::vector<char> bytestream;
 	generate_bytestream(bytestream);
 
 	// send
-	clients.broadcast(bytestream);
+	clients.broadcast(bytestream, document_id);
 }

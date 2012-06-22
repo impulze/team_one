@@ -7,7 +7,9 @@
 #ifndef _MESSAGE_H_
 #define _MESSAGE_H_
 
+#include <array>
 #include <cstdint> // uint*_t
+#include <string>
 #include <vector>
 
 #include "ClientCollection.h"
@@ -24,6 +26,7 @@ class Message
 			STATUS_DOC_ALREADY_EXIST, // doc does already exist
 			STATUS_DOC_NOT_EXIST, // doc does not exist
 			STATUS_DOC_SAVED, // doc was saved by another user
+			STATUS_IO_ERROR, // an IO error occurred
 			STATUS_USER_NOT_EXIST, // username does not exist
 			STATUS_USER_WRONG_PASSWORD, // password is wrong
 			STATUS_USER_NO_ACTIVE_DOC, // user has no active doc
@@ -49,10 +52,13 @@ class Message
 			TYPE_USER_LOGIN, // user sends login credentials (name, hash)
 			TYPE_USER_LOGOUT, // user logs out
 			TYPE_USER_JOIN, // server -> client only (a new user connected)
-			TYPE_USER_QUIT // server -> client only (a user disconnected)
+			TYPE_USER_QUIT, // server -> client only (a user disconnected)
+
+			TYPE_INIT, // pseudo-type for handler initialization
+			TYPE_EXIT // pseudo-type on server exit/quit
 		};
 		
-		const size_t
+		static const size_t
 			FIELD_SIZE_BYTE = 1,
 			FIELD_SIZE_ID = 4,
 			FIELD_SIZE_DOC_NAME = 128,
@@ -62,21 +68,25 @@ class Message
 			FIELD_SIZE_TYPE = 1,
 			FIELD_SIZE_USER_NAME = 64;
 		
-		std::vector<char>	bytes;
-		std::vector<char>	hash;
-		int32_t				length;
-		int32_t				id;
-		std::vector<char>	name;
-		int32_t				position;
-		ClientSptr			source;
-		MessageStatus		status;
-		MessageType	 	 	type;
+		std::vector<char>					bytes;
+		std::array<char, FIELD_SIZE_HASH>	hash;
+		int32_t								length;
+		int32_t								id;
+		std::vector<char>					name;
+		int32_t								position;
+		ClientSptr							source;
+		MessageStatus						status;
+		MessageType	 	 					type;
 
 		Message(void);
 		Message(const Message &) = delete;
 
 		Message operator=(const Message &) = delete;
 		
+		/**
+			Converts the stored name field to a std::string and returns it.
+		**/
+		inline std::string get_name_string(void) const;
 		/**
 			Checks whether this is an empty message.
 		**/
@@ -94,13 +104,15 @@ class Message
 				client
 			=#	Client::send(std::vector<char> &)
 		**/
-		void send_to(Client &client) const;
+		void send_to(const Client &client) const;
 		/**
 			Like send_to(ClientSptr), but sends to all Clients in the given ClientCollection.
 				clients
-			=#	ClientCollection::broadcast(std::vector<char> &)
+				document_id [#] -> ClientCollection::broadcast(std::vector<char> &, uint32_t)
+					.document_id
+			=#	ClientCollection::broadcast(std::vector<char> &, int32_t)
 		**/
-		void send_to(ClientCollection &clients) const;
+		void send_to(const ClientCollection &clients, int32_t document_id = 0) const;
 	
 	private:
 		/**
