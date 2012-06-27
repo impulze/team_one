@@ -83,34 +83,37 @@ Document Document::create(std::string const &name, bool overwrite)
 
 	int const fd = open_writable(name, overwrite);
 
-	Document doc(fd, name, g_current_global_document_id);
-
-	increment_global_document_id();
-
-	return doc;
+	return Document(fd, name);
 }
 
 Document Document::open(std::string const &name)
 {
 	int const fd = open_readable(name);
 
-	Document doc(fd, name, g_current_global_document_id);
-
-	increment_global_document_id();
-
-	return doc;
+	return Document(fd, name);
 }
 
-bool Document::is_empty(std::string const &name)
+bool Document::is_empty()
 {
-	int const fd = open_readable(name);
+	if (contents_fetched_)
+	{
+		return contents_.empty();
+	}
 
-	off_t const end = ::lseek(fd, 0, SEEK_END);
+	off_t const now = ::lseek(fd_, 0, SEEK_CUR);
+
+	// should never fail
+	assert(now != static_cast<off_t>(-1));
+
+	off_t const end = ::lseek(fd_, 0, SEEK_END);
 
 	// should never fail
 	assert(end != static_cast<off_t>(-1));
 
-	::close(fd);
+	off_t const now_again = ::lseek(fd_, now, SEEK_SET);
+
+	// should never fail
+	assert(now_again != static_cast<off_t>(-1));
 
 	return end == 0;
 }
@@ -147,11 +150,6 @@ void Document::remove()
 
 void Document::save()
 {
-	off_t const begin = ::lseek(fd_, 0, SEEK_SET);
-
-	// should never fail
-	assert(begin != static_cast<off_t>(-1));
-
 	ssize_t const write_result = ::write(fd_, &contents_[0], contents_.size());
 
 	if (static_cast<std::vector<char>::size_type>(write_result) != contents_.size())
@@ -196,11 +194,6 @@ std::vector<char> &Document::get_contents()
 			throw DocumentError("file too big");
 		}
 	}
-
-	// should never fail
-	off_t const seek_result = ::lseek(fd_, 0, SEEK_SET);
-
-	assert(seek_result != static_cast<off_t>(-1));
 
 	// reserve space
 	contents_.resize(end);
@@ -270,13 +263,14 @@ std::vector<std::string> Document::list_documents()
 	return list;
 }
 
-Document::Document(int fd, std::string const &name, std::int32_t id)
+Document::Document(int fd, std::string const &name)
 	: fd_(fd),
 	  name_(name),
-	  id_(id),
+	  id_(g_current_global_document_id),
 	  document_closed_(false),
 	  contents_fetched_(false)
 {
+	increment_global_document_id();
 }
 
 int Document::open_readable(std::string const &name)

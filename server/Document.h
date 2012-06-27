@@ -95,7 +95,7 @@ public:
 	 *                                  open the file.
 	 * @throws DocumentError If opening fails for other reasons.
 	 */
-	static bool is_empty(std::string const &name);
+	bool is_empty();
 
 	/**
 	 * Remove the document physically.
@@ -178,12 +178,12 @@ private:
 	/**
 	 * Create a document with a linux specific file descriptor.
 	 *
-	 * @param fd The descriptor for this document.
+	 * @param fd The descriptor for this document. The descriptor must
+	 *           be a valid descriptor as returned by open(). Otherwise
+	 *           the behaviour is undefined.
 	 * @param name The name the document is referenced by.
-	 * @param id The id for this document. Keep in mind that once the
-	 *           maximum id is reached, it starts at 0 again.
 	 */
-	explicit Document(int fd, std::string const &name, std::int32_t id);
+	explicit Document(int fd, std::string const &name);
 
 	/**
 	 * Delete the default copy constructor, making copying a document object
