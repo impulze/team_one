@@ -1,5 +1,6 @@
 CXX = clang++ -std=c++11
 VALGRIND = valgrind
+DOXYGEN = doxygen
 
 CXXFLAGS += -Wall -Wextra
 CXXFLAGS += $(shell ncursesw5-config --cflags)
@@ -43,11 +44,15 @@ tests/Server: $(TEST_BIN_OBJS)
 
 depend: $(BIN_DEPS) $(TEST_BIN_DEPS)
 
+%_doxygen: %_Doxyfile
+	$(DOXYGEN) $^
+
 clean:
 	$(RM) Server $(BIN_OBJS)
 	$(RM) tests/Server $(TEST_BIN_OBJS)
 	$(RM) $(BIN_DEPS)
 	$(RM) $(TEST_BIN_DEPS)
+	$(RM) -r server_doxygen/
 
 valgrind:
 	$(VALGRIND) \

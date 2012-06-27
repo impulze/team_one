@@ -17,23 +17,23 @@
  * Implementation file for the document implementation.
  */
 
+/**
+ * Global variable storing the documents directory for the server.
+ */
 std::string const Document::directory_ = "./documents/";
 
 namespace
 {
+	/**
+	 * A global variable for the current document id. Wraps after
+	 * 2147483647
+	 */
 	std::int32_t g_current_global_document_id = 1;
 
-	void increment_global_document_id()
-	{
-		if (g_current_global_document_id == std::numeric_limits<std::int32_t>::max())
-		{
-			g_current_global_document_id = 1;
-		}
-		else
-		{
-			g_current_global_document_id++;
-		}
-	}
+	/**
+	 * Increment teh global document id and consider wrap around.
+	 */
+	void increment_global_document_id();
 }
 
 namespace document_errors
@@ -54,6 +54,11 @@ namespace document_errors
 	}
 
 	DocumentPermissionsError::DocumentPermissionsError(std::string const &message)
+		: DocumentError(message)
+	{
+	}
+
+	DocumentClosedError::DocumentClosedError(std::string const &message)
 		: DocumentError(message)
 	{
 	}
@@ -100,20 +105,29 @@ bool Document::is_empty()
 		return contents_.empty();
 	}
 
+	if (document_closed_)
+	{
+		throw DocumentClosedError("trying to seek in document that got closed");
+	}
+
 	off_t const now = ::lseek(fd_, 0, SEEK_CUR);
-
-	// should never fail
-	assert(now != static_cast<off_t>(-1));
-
+	off_t const begin = ::lseek(fd_, 0, SEEK_SET);
 	off_t const end = ::lseek(fd_, 0, SEEK_END);
-
-	// should never fail
-	assert(end != static_cast<off_t>(-1));
-
 	off_t const now_again = ::lseek(fd_, now, SEEK_SET);
 
 	// should never fail
+	assert(now != static_cast<off_t>(-1));
+	assert(begin != static_cast<off_t>(-1));
 	assert(now_again != static_cast<off_t>(-1));
+
+	if (end == static_cast<off_t>(-1))
+	{
+		// should only fail if file too large
+		if (errno == EOVERFLOW)
+		{
+			throw DocumentError("file too big");
+		}
+	}
 
 	return end == 0;
 }
@@ -150,6 +164,11 @@ void Document::remove()
 
 void Document::save()
 {
+	if (document_closed_)
+	{
+		throw DocumentClosedError("trying to write contents from document that got closed");
+	}
+
 	ssize_t const write_result = ::write(fd_, &contents_[0], contents_.size());
 
 	if (static_cast<std::vector<char>::size_type>(write_result) != contents_.size())
@@ -169,6 +188,11 @@ void Document::close()
 
 Hash::hash_t Document::hash() const
 {
+	if (!contents_fetched_)
+	{
+		get_contents();
+	}
+
 	if (contents_.size() >= std::numeric_limits<unsigned long>::max())
 	{
 		throw std::runtime_error("unable to create hash because document is too big");
@@ -182,6 +206,11 @@ std::vector<char> &Document::get_contents()
 	if (contents_fetched_)
 	{
 		return contents_;
+	}
+
+	if (document_closed_)
+	{
+		throw DocumentClosedError("trying to read contents in document that got closed");
 	}
 
 	off_t const end = ::lseek(fd_, 0, SEEK_END);
@@ -263,16 +292,6 @@ std::vector<std::string> Document::list_documents()
 	return list;
 }
 
-Document::Document(int fd, std::string const &name)
-	: fd_(fd),
-	  name_(name),
-	  id_(g_current_global_document_id),
-	  document_closed_(false),
-	  contents_fetched_(false)
-{
-	increment_global_document_id();
-}
-
 int Document::open_readable(std::string const &name)
 {
 	// using Linux API here because of error checking functionality
@@ -344,4 +363,29 @@ int Document::open_writable(std::string const &name, bool overwrite)
 	}
 
 	return fd;
+}
+
+Document::Document(int fd, std::string const &name)
+	: fd_(fd),
+	  name_(name),
+	  id_(g_current_global_document_id),
+	  document_closed_(false),
+	  contents_fetched_(false)
+{
+	increment_global_document_id();
+}
+
+namespace
+{
+	void increment_global_document_id()
+	{
+		if (g_current_global_document_id == std::numeric_limits<std::int32_t>::max())
+		{
+			g_current_global_document_id = 1;
+		}
+		else
+		{
+			g_current_global_document_id++;
+		}
+	}
 }
