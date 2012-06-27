@@ -131,10 +131,7 @@ public:
 	 *
 	 * @return A reference to the vector with all the bytes of the document.
 	 */
-	std::vector<char> &get_contents()
-	{
-		return contents_;
-	}
+	std::vector<char> &get_contents();
 
 	/**
 	 * Obtain a list of documents that can be opened.
@@ -167,6 +164,18 @@ private:
 	static int open_readable(std::string const &name);
 
 	/**
+	 * Open a document by name and return the file descriptor.
+	 *
+	 * @param name The name the document is referenced by.
+	 * @return The UNIX file descriptor.
+	 * @throws DocumentDoesntExistError If the document doesn't exist.
+	 * @throws DocumentPermissionsError If the opener lacks sufficient permissions to
+	 *                                  open the file.
+	 * @throws DocumentError If opening fails for other reasons.
+	 */
+	static int open_writable(std::string const &name, bool overwrite);
+
+	/**
 	 * Create a document with a linux specific file descriptor.
 	 *
 	 * @param fd The descriptor for this document.
@@ -194,6 +203,7 @@ private:
 	static std::string const directory_;
 	std::int32_t id_;
 	bool document_closed_;
+	bool contents_fetched_;
 };
 
 #endif
