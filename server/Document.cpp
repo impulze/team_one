@@ -22,19 +22,11 @@
  */
 std::string const Document::directory_ = "./documents/";
 
-namespace
-{
-	/**
-	 * A global variable for the current document id. Wraps after
-	 * 2147483647
-	 */
-	std::int32_t g_current_global_document_id = 1;
-
-	/**
-	 * Increment teh global document id and consider wrap around.
-	 */
-	void increment_global_document_id();
-}
+/**
+ * A global variable for the current document id. Wraps after
+ * 2147483647
+ */
+std::int32_t Document::global_document_id_ = 1;
 
 namespace document_errors
 {
@@ -186,7 +178,7 @@ void Document::close()
 	}
 }
 
-Hash::hash_t Document::hash() const
+Hash::hash_t Document::hash()
 {
 	if (!contents_fetched_)
 	{
@@ -365,27 +357,24 @@ int Document::open_writable(std::string const &name, bool overwrite)
 	return fd;
 }
 
+void Document::increment_global_document_id()
+{
+	if (global_document_id_ == std::numeric_limits<std::int32_t>::max())
+	{
+		global_document_id_ = 1;
+	}
+	else
+	{
+		global_document_id_++;
+	}
+}
+
 Document::Document(int fd, std::string const &name)
 	: fd_(fd),
 	  name_(name),
-	  id_(g_current_global_document_id),
+	  id_(global_document_id_),
 	  document_closed_(false),
 	  contents_fetched_(false)
 {
 	increment_global_document_id();
-}
-
-namespace
-{
-	void increment_global_document_id()
-	{
-		if (g_current_global_document_id == std::numeric_limits<std::int32_t>::max())
-		{
-			g_current_global_document_id = 1;
-		}
-		else
-		{
-			g_current_global_document_id++;
-		}
-	}
 }

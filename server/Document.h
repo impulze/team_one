@@ -202,7 +202,7 @@ public:
 	 *                            size of the local unsigned long type.
 	 * @return The SHA-1 hash (20 bytes) of the contents.
 	 */
-	Hash::hash_t hash() const;
+	Hash::hash_t hash();
 
 	/**
 	 * Obtain the bytes of the document.
@@ -274,6 +274,11 @@ private:
 	static int open_writable(std::string const &name, bool overwrite);
 
 	/**
+	 * Increment the global document id and consider wrap around.
+	 */
+	static void increment_global_document_id();
+
+	/**
 	 * Create a document with a linux specific file descriptor.
 	 *
 	 * @param fd The descriptor for this document. The descriptor must
@@ -299,6 +304,7 @@ private:
 	int fd_;
 	std::string const name_;
 	static std::string const directory_;
+	static std::int32_t global_document_id_;
 	std::int32_t id_;
 	bool document_closed_;
 	bool contents_fetched_;
