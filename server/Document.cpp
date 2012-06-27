@@ -110,6 +110,8 @@ bool Document::is_empty(std::string const &name)
 	// should never fail
 	assert(end != static_cast<off_t>(-1));
 
+	::close(fd);
+
 	return end == 0;
 }
 
