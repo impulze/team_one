@@ -300,13 +300,21 @@ private:
 	 */
 	Document &operator=(Document const &) = delete;
 
+	//! byte container for the document
 	std::vector<char> contents_;
+	//! unix file descriptor valid until close() was called
 	int fd_;
+	//! the name which was passed from create() or open()
 	std::string const name_;
+	//! the directory in which all server documents can be found
 	static std::string const directory_;
+	//! the global document id, wraps after 2147483647
 	static std::int32_t global_document_id_;
+	//! the id for this particular document instance
 	std::int32_t id_;
+	//! indicator for closed documents, true after close()
 	bool document_closed_;
+	//! indicator for fetched contents, true after get_contents()
 	bool contents_fetched_;
 };
 
