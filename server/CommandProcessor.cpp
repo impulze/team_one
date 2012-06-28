@@ -36,16 +36,16 @@ CommandProcessor::CommandProcessor(UserInterface &user_interface,
 			std::bind(&CommandProcessor::check_password_hash, this, _1)));
 }
 
-void CommandProcessor::adduser(command_arguments_t const &parameters)
+void CommandProcessor::adduser(command_arguments_t const &arguments)
 {
-	if (parameters.size() != 2)
+	if (arguments.size() != 2)
 	{
 		throw userinterface_errors::InvalidCommandError("Syntax: adduser <name> <password>");
 	}
 
 	std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
-	std::string const nonwide_name = converter.to_bytes(parameters[0]);
-	std::string const nonwide_password = converter.to_bytes(parameters[1]);
+	std::string const nonwide_name = converter.to_bytes(arguments[0]);
+	std::string const nonwide_password = converter.to_bytes(arguments[1]);
 
 	try
 	{
@@ -57,16 +57,16 @@ void CommandProcessor::adduser(command_arguments_t const &parameters)
 	}
 }
 
-void CommandProcessor::deluser(command_arguments_t const &parameters)
+void CommandProcessor::deluser(command_arguments_t const &arguments)
 {
-	if (parameters.size() != 1)
+	if (arguments.size() != 1)
 	{
 		throw userinterface_errors::InvalidCommandError("Syntax: deluser <name>");
 	}
 
 
 	std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
-	std::string const nonwide_name = converter.to_bytes(parameters[0]);
+	std::string const nonwide_name = converter.to_bytes(arguments[0]);
 
 	try
 	{
@@ -78,17 +78,17 @@ void CommandProcessor::deluser(command_arguments_t const &parameters)
 	}
 }
 
-void CommandProcessor::check_password(command_arguments_t const &parameters)
+void CommandProcessor::check_password(command_arguments_t const &arguments)
 {
-	if (parameters.size() != 2)
+	if (arguments.size() != 2)
 	{
 		throw userinterface_errors::InvalidCommandError("Syntax: check <name> <password>");
 	}
 
 
 	std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
-	std::string const nonwide_name = converter.to_bytes(parameters[0]);
-	std::string const nonwide_password = converter.to_bytes(parameters[1]);
+	std::string const nonwide_name = converter.to_bytes(arguments[0]);
+	std::string const nonwide_password = converter.to_bytes(arguments[1]);
 
 	try
 	{
@@ -102,17 +102,16 @@ void CommandProcessor::check_password(command_arguments_t const &parameters)
 	}
 }
 
-void CommandProcessor::check_password_hash(command_arguments_t const &parameters)
+void CommandProcessor::check_password_hash(command_arguments_t const &arguments)
 {
-	if (parameters.size() != 2)
+	if (arguments.size() != 2)
 	{
 		throw userinterface_errors::InvalidCommandError("Syntax: check <name> <password_hash>");
 	}
 
-
 	std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
-	std::string const nonwide_name = converter.to_bytes(parameters[0]);
-	std::string const nonwide_password_hash = converter.to_bytes(parameters[1]);
+	std::string const nonwide_name = converter.to_bytes(arguments[0]);
+	std::string const nonwide_password_hash = converter.to_bytes(arguments[1]);
 
 	try
 	{
@@ -125,8 +124,12 @@ void CommandProcessor::check_password_hash(command_arguments_t const &parameters
 	}
 }
 
-void CommandProcessor::quit(command_arguments_t const &)
+void CommandProcessor::quit(command_arguments_t const &arguments)
 {
-	// ignore parameters
+	if (arguments.size() != 0)
+	{
+		throw userinterface_errors::InvalidCommandError("Syntax: quit");
+	}
+
 	user_interface_.quit();
 }
