@@ -64,17 +64,7 @@ void UserInterface::unregister_processor(command_processors_t::iterator iterator
 void UserInterface::quit()
 {
 	quit_mutex_.lock();
-
-	try
-	{
-		quit_requested_ = true;
-	}
-	catch (...)
-	{
-		quit_mutex_.unlock();
-		throw;
-	}
-
+	quit_requested_ = true;
 	quit_mutex_.unlock();
 }
 
