@@ -4,8 +4,6 @@
 	created: Wednesday, 23rd May 2012
 **/
 
-// TODO write getters and setters for Message data
-
 #include "CommandProcessor.h"
 #include "NetworkInterface.h"
 #include "NCursesUserInterface.h"

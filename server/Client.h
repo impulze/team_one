@@ -7,16 +7,16 @@
 #ifndef _CLIENT_H_
 #define _CLIENT_H_
 
-#include <cstdint> // uint32_t
+#include <cstdint>
 #include <vector>
 
 class Client
 {
 	public:
-		uint32_t	active_document;
-		uint64_t	cursor;
+		int32_t		active_document;
+		int32_t		cursor;
 		const int	socket;
-		uint32_t	user_id;
+		int32_t		user_id;
 
 		/*
 			Uses the specified listening socket to accept a new incoming client connection.
@@ -31,7 +31,7 @@ class Client
 		~Client(void);
 
 		template<typename T>
-		void receive(T *destination, uint64_t size) const;
+		void receive(T *destination, size_t size) const;
 		void send(const std::vector<char> &bytes) const;
 };
 

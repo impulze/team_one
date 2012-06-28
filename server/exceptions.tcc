@@ -10,6 +10,11 @@
 #include "errno.h"
 
 template<typename T>
+Exception::AlreadyInstantiated::AlreadyInstantiated(T msg):
+	std::logic_error(msg)
+{}
+
+template<typename T>
 Exception::ClientAlreadyAdded::ClientAlreadyAdded(T msg):
 	std::invalid_argument(msg)
 {}
@@ -27,6 +32,11 @@ Exception::ErrnoError::ErrnoError(T msg, const char *function):
 template<typename T>
 Exception::InvalidMessageType::InvalidMessageType(T msg, Message::MessageType type, int socket):
 	std::runtime_error(msg), socket(socket), type(type)
+{}
+
+template<typename T>
+Exception::SocketFailure::SocketFailure(T msg, int socket):
+	std::runtime_error(msg), socket(socket)
 {}
 
 #endif

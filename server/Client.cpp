@@ -25,4 +25,10 @@ Client::~Client(void)
 }
 
 void Client::send(const std::vector<char> &bytes) const
-{}
+{
+	ssize_t sent = ::send(socket, bytes.data(), bytes.size(), 0);
+	if (sent == -1)
+	{ throw Exception::ErrnoError("message sending failed", "send"); }
+	else if (sent < bytes.size())
+	{ throw Exception::SocketFailure("not all bytes have been sent", socket); }
+}

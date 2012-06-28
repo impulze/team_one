@@ -11,15 +11,13 @@
 #include "exceptions.h"
 
 template<typename T>
-void Client::receive(T *destination, uint64_t size) const
+void Client::receive(T *destination, size_t size) const
 {
-	uint64_t read_size = 0;
-	while (read_size < size)
-	{
-		ssize_t read_tmp = recv(this->socket, destination + read_size, size - read_size, 0);
-		if (read_tmp == -1)
-		{ throw Exception::ErrnoError("message reception failed", "recv"); }
-	}
+	ssize_t received = recv(socket, destination, size, MSG_WAITALL);
+	if (received == -1)
+	{ throw Exception::ErrnoError("message reception failed", "recv"); }
+	else if (received < size)
+	{ throw Exception::SocketFailure("too less bytes received", socket); }
 }
 
 #endif

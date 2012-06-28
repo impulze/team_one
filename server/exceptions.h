@@ -13,6 +13,12 @@
 
 namespace Exception
 {
+	struct AlreadyInstantiated : std::logic_error
+	{
+		template<typename T>
+		AlreadyInstantiated(T msg);
+	};
+
 	struct ClientAlreadyAdded : std::invalid_argument
 	{
 		template<typename T>
@@ -33,8 +39,15 @@ namespace Exception
 	{
 		const int					socket;
 		const Message::MessageType	type;
-		template <class T>
+		template <typename T>
 		InvalidMessageType(T msg, Message::MessageType type, int socket);
+	};
+
+	struct SocketFailure : std::runtime_error
+	{
+		const int	socket;
+		template<typename T>
+		SocketFailure(T msg, int socket);
 	};
 };
 
