@@ -81,10 +81,10 @@ public:
 	 */
 	Database &operator=(Database const &) = delete;
 
-	// A result consisting of column name and value.
+	//! A result consisting of column name and value.
 	typedef std::unordered_map<std::string, std::string> result_t;
 
-	// A list of results.
+	//! A list of results (see result_t).
 	typedef std::vector<result_t> results_t;
 
 	/**
