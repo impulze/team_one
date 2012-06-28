@@ -296,7 +296,7 @@ void NCursesUserInterface::printfv(char const *format, ...)
 {
 try
 {
-	mutex_.lock();
+	printf_mutex_.lock();
 
 	va_list list;
 	va_start(list, format);
@@ -315,7 +315,7 @@ try
 
 	va_end(list);
 
-	mutex_.unlock();
+	printf_mutex_.unlock();
 }
 catch (...)
 {

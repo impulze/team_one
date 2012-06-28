@@ -36,6 +36,16 @@ namespace userinterface_errors
 	};
 }
 
+/**
+ * This class implements the basic UserInterface with the ncurses
+ * library.
+ * The library can be used on almost all POSIX operating systems.
+ * The loop basically polls the standard input and checks for user
+ * input.
+ * Then invokes the UserInterface::process_line() and possibly
+ * executes command processors which were registered
+ * with UserInterface::register_processor().
+ */
 class NCursesUserInterface
 	: public UserInterface
 {
@@ -59,11 +69,21 @@ public:
 private:
 	void printfv(char const *format, ...);
 
+	/**
+	 * A state variable which stores the information if the user interface
+	 * has been deactivated. In this case printf() no longer prints
+	 * on the user interface but rather the standard error/output.
+	 */
 	bool deinitialized_;
+	//! NCurses screen variable for this interface
 	SCREEN *screen_;
+	//! NCurses window variable for the input box
 	WINDOW *input_window_;
+	//! The current position in the current line.
 	std::wstring::size_type current_position_;
-	std::mutex mutex_;
+	//! A mutex for mutual exclusion of the printf() function.
+	std::mutex printf_mutex_;
 };
 
 #endif
+
