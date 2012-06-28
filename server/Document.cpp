@@ -90,22 +90,16 @@ Document Document::open(std::string const &name)
 	return Document(fd, name);
 }
 
-bool Document::is_empty()
+bool Document::is_empty(std::string const &name)
 {
-	if (contents_fetched_)
-	{
-		return contents_.empty();
-	}
+	int const fd = open_readable(name);
 
-	if (document_closed_)
-	{
-		throw DocumentClosedError("trying to seek in document that got closed");
-	}
+	off_t const now = ::lseek(fd, 0, SEEK_CUR);
+	off_t const begin = ::lseek(fd, 0, SEEK_SET);
+	off_t const end = ::lseek(fd, 0, SEEK_END);
+	off_t const now_again = ::lseek(fd, now, SEEK_SET);
 
-	off_t const now = ::lseek(fd_, 0, SEEK_CUR);
-	off_t const begin = ::lseek(fd_, 0, SEEK_SET);
-	off_t const end = ::lseek(fd_, 0, SEEK_END);
-	off_t const now_again = ::lseek(fd_, now, SEEK_SET);
+	::close(fd);
 
 	// should never fail
 	assert(now != static_cast<off_t>(-1));
@@ -226,6 +220,7 @@ std::vector<char> &Document::get_contents()
 		throw DocumentError("unable to read all data from file");
 	}
 
+	contents_fetched_ = true;
 	return contents_;
 }
 
@@ -376,5 +371,6 @@ Document::Document(int fd, std::string const &name)
 	  document_closed_(false),
 	  contents_fetched_(false)
 {
+	get_contents();
 	increment_global_document_id();
 }

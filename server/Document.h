@@ -129,7 +129,7 @@ public:
 	/**
 	 * Create a document by name.
 	 *
-	 * Refer to open_writable() to see possible Exceptions.
+	 * Refer to open_writable() and Document() to see possible Exceptions.
 	 *
 	 * @param name The name the document is referenced by.
 	 * @param overwrite Allow overwriting if the document exists.
@@ -140,7 +140,7 @@ public:
 	/**
 	 * Open a document by name.
 	 *
-	 * Refer to open_readable() to see possible Exceptions.
+	 * Refer to open_readable() and Document() to see possible Exceptions.
 	 *
 	 * @param name The name the document is referenced by.
 	 * @return The Document instance.
@@ -150,17 +150,14 @@ public:
 	/**
 	 * Check if a document is empty.
 	 *
-	 * @throws document_errors::DocumentClosedError If document was closed prior to
-	 *                                              this call with a call to close()
-	 *                                              without having read the contents
-	 *                                              before that with a call to
-	 *                                              get_contents().
+	 * Refer to open_readable() which additional exceptions can occur.
+	 *
 	 * @throws document_errors::DocumentError If the document size exceeds
 	 *                                        the upper limit of the size of
 	 *                                        the local off_t type.
 	 * @return true if empty, false otherwise.
 	 */
-	bool is_empty();
+	static bool is_empty(std::string const &name);
 
 	/**
 	 * Remove the document physically.
@@ -280,6 +277,9 @@ private:
 
 	/**
 	 * Create a document with a linux specific file descriptor.
+	 *
+	 * See get_contents() to see which exceptions can occur.
+	 * The constructor initially reads all the contents.
 	 *
 	 * @param fd The descriptor for this document. The descriptor must
 	 *           be a valid descriptor as returned by open(2). Otherwise
