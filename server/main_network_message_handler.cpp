@@ -282,6 +282,7 @@ void main_network_message_handler(const Message &message)
 			break;
 		}
 		case Message::TYPE_SYNC_BYTE:
+		{
 			// TODO put this in a function!
 			DocumentSptr doc;
 			response.type = Message::MessageType::TYPE_STATUS;
@@ -320,7 +321,7 @@ void main_network_message_handler(const Message &message)
 								message.source->active_document);
 
 							// apply change to document
-							contents.insert(contents.begin() + sync.position, bytes[0]);
+							contents.insert(contents.begin() + sync.position, message.bytes[0]);
 
 							break;
 						}
@@ -333,6 +334,7 @@ void main_network_message_handler(const Message &message)
 			response.send_to(*message.source);
 
 			break;
+		}
 
 		case Message::TYPE_SYNC_CURSOR:
 			message.source->cursor = message.position;
