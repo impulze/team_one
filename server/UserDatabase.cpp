@@ -6,7 +6,7 @@
 #include <stdexcept>
 
 /**
- * @file UserDatabaseDatabase.cpp
+ * @file UserDatabase.cpp
  * @author Daniel Mierswa <daniel.mierswa@student.hs-rm.de>
  *
  * Implementation file for the user database implementation.
@@ -14,6 +14,7 @@
 
 namespace
 {
+	//! A global variable which holds the used SQL queries (for easier access).
 	std::string const g_sql_queries[] = {
 		"CREATE TABLE IF NOT EXISTS UserDatabase ("
 			"u_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,"
@@ -27,7 +28,22 @@ namespace
 		"SELECT MAX(u_id) FROM UserDatabase",
 	};
 
+	/**
+	 * A simple wrapper which generates a user doesn't exist message with
+	 * the specific username.
+	 *
+	 * @param user The username.
+	 * @return The specific message which can be passed to the exception.
+	 */
 	inline std::string generate_userdoesntexist_message(std::string const &user);
+
+	/**
+	 * A simple wrapper which generates a user already present message with
+	 * the specific username.
+	 *
+	 * @param user The username.
+	 * @return The specific message which can be passed to the exception.
+	 */
 	inline std::string generate_useralreadypresent_message(std::string const &user);
 }
 
@@ -73,17 +89,12 @@ std::int32_t UserDatabase::check(std::string const &name, Hash::hash_t const &pa
 	{
 		Database::results_t result = database_->execute_sql(g_sql_queries[4]);
 
-		if (result.size() != 1)
-		{
-			throw userdatabase_errors::UserDoesntExistError(name);
-		}
-
-		if (result[0].find("MAX(u_id)") == result[0].end())
+		if (result.size() != 1 || result[0].find("MAX(u_id)") == result[0].end())
 		{
 			throw userdatabase_errors::Failure("no maximum user id");
 		}
 
-		std::int32_t maximum_user_id = std::stoi(result[0]["MAX(u_id)"]);
+		std::int32_t const maximum_user_id = std::stoi(result[0]["MAX(u_id)"]);
 
 		if (maximum_user_id == std::numeric_limits<std::int32_t>::max())
 		{

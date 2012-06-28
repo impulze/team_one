@@ -17,12 +17,16 @@
  * Implementation file for the document implementation.
  */
 
+/**
+ * Global variable storing the documents directory for the server.
+ */
 std::string const Document::directory_ = "./documents/";
 
-namespace
-{
-	std::int32_t g_current_global_document_id = 1;
-}
+/**
+ * A global variable for the current document id. Wraps after
+ * 2147483647
+ */
+std::int32_t Document::global_document_id_ = 1;
 
 namespace document_errors
 {
@@ -45,6 +49,11 @@ namespace document_errors
 		: DocumentError(message)
 	{
 	}
+
+	DocumentClosedError::DocumentClosedError(std::string const &message)
+		: DocumentError(message)
+	{
+	}
 }
 
 using namespace document_errors;
@@ -54,7 +63,8 @@ Document::Document(Document &&other)
 	  fd_(other.fd_),
 	  name_(std::move(other.name_)),
 	  id_(other.id_),
-	  document_closed_(other.document_closed_)
+	  document_closed_(other.document_closed_),
+	  contents_fetched_(other.contents_fetched_)
 {
 	// prevent the other destructor to call close
 	other.document_closed_ = true;
@@ -67,116 +77,51 @@ Document::~Document()
 
 Document Document::create(std::string const &name, bool overwrite)
 {
-	// using Linux API here because of error checking functionality
-	int flags = O_CREAT | O_WRONLY | O_TRUNC;
 
-	if (!overwrite)
-	{
-		flags |= O_EXCL;
-	}
+	int const fd = open_writable(name, overwrite);
 
-	int const fd = ::open(name.c_str(), flags, 0644);
-
-	if (fd < 0)
-	{
-		std::ostringstream strm;
-
-		strm << "while creating document <" << name << ">: ";
-
-		if (errno == EEXIST)
-		{
-			strm << "document already exists";
-
-			throw DocumentAlreadyExistsError(strm.str());
-		}
-
-		if (errno == EACCES || errno == EROFS)
-		{
-			strm << "insufficient permissions to create document";
-
-			throw DocumentPermissionsError(strm.str());
-		}
-
-		strm << std::strerror(errno);
-
-		throw DocumentError(strm.str());
-	}
-
-	Document doc(fd, name, g_current_global_document_id);
-
-	if (g_current_global_document_id == std::numeric_limits<std::int32_t>::max())
-	{
-		g_current_global_document_id = 1;
-	}
-	else
-	{
-		g_current_global_document_id++;
-	}
-
-	return doc;
+	return Document(fd, name);
 }
 
 Document Document::open(std::string const &name)
 {
 	int const fd = open_readable(name);
 
-	Document doc(fd, name, g_current_global_document_id);
-
-	if (g_current_global_document_id == std::numeric_limits<std::int32_t>::max())
-	{
-		g_current_global_document_id = 1;
-	}
-	else
-	{
-		g_current_global_document_id++;
-	}
-
-	return doc;
+	return Document(fd, name);
 }
 
-bool Document::is_empty(std::string const &name)
+bool Document::is_empty()
 {
-	int const fd = open_readable(name);
+	if (contents_fetched_)
+	{
+		return contents_.empty();
+	}
 
-	off_t const end = ::lseek(fd, 0, SEEK_END);
+	if (document_closed_)
+	{
+		throw DocumentClosedError("trying to seek in document that got closed");
+	}
+
+	off_t const now = ::lseek(fd_, 0, SEEK_CUR);
+	off_t const begin = ::lseek(fd_, 0, SEEK_SET);
+	off_t const end = ::lseek(fd_, 0, SEEK_END);
+	off_t const now_again = ::lseek(fd_, now, SEEK_SET);
 
 	// should never fail
-	assert(end != static_cast<off_t>(-1));
+	assert(now != static_cast<off_t>(-1));
+	assert(begin != static_cast<off_t>(-1));
+	assert(now_again != static_cast<off_t>(-1));
 
-	return end == 0;
-}
-
-int Document::open_readable(std::string const &name)
-{
-	// using Linux API here because of error checking functionality
-	int const fd = ::open(name.c_str(), O_RDONLY);
-
-	if (fd < 0)
+	if (end == static_cast<off_t>(-1))
 	{
-		std::ostringstream strm;
-
-		strm << "while opening document <" << name << ">: ";
-
-		if (errno == ENOENT)
+		// should only fail if file too large
+		if (errno == EOVERFLOW)
 		{
-			strm << "document does not exist";
-
-			throw DocumentDoesntExistError(strm.str());
+			throw DocumentError("file too big");
 		}
-
-		if (errno == EACCES)
-		{
-			strm << "insufficient permissions to open document";
-
-			throw DocumentPermissionsError(strm.str());
-		}
-
-		strm << std::strerror(errno);
-
-		throw DocumentError(strm.str());
 	}
 
-	return fd;
+	return end == 0;
 }
 
 void Document::remove()
@@ -211,10 +156,10 @@ void Document::remove()
 
 void Document::save()
 {
-	off_t const begin = ::lseek(fd_, 0, SEEK_SET);
-
-	// should never fail
-	assert(begin != static_cast<off_t>(-1));
+	if (document_closed_)
+	{
+		throw DocumentClosedError("trying to write contents from document that got closed");
+	}
 
 	ssize_t const write_result = ::write(fd_, &contents_[0], contents_.size());
 
@@ -233,14 +178,55 @@ void Document::close()
 	}
 }
 
-Hash::hash_t Document::hash() const
+Hash::hash_t Document::hash()
 {
+	if (!contents_fetched_)
+	{
+		get_contents();
+	}
+
 	if (contents_.size() >= std::numeric_limits<unsigned long>::max())
 	{
 		throw std::runtime_error("unable to create hash because document is too big");
 	}
 
 	return Hash::hash_bytes(contents_);
+}
+
+std::vector<char> &Document::get_contents()
+{
+	if (contents_fetched_)
+	{
+		return contents_;
+	}
+
+	if (document_closed_)
+	{
+		throw DocumentClosedError("trying to read contents in document that got closed");
+	}
+
+	off_t const end = ::lseek(fd_, 0, SEEK_END);
+
+	if (end == static_cast<off_t>(-1))
+	{
+		// should only fail if file too large
+		if (errno == EOVERFLOW)
+		{
+			throw DocumentError("file too big");
+		}
+	}
+
+	// reserve space
+	contents_.resize(end);
+
+	ssize_t const read_result = ::read(fd_, &contents_[0], end);
+
+	if (read_result != end)
+	{
+		throw DocumentError("unable to read all data from file");
+	}
+
+	return contents_;
 }
 
 std::vector<std::string> Document::list_documents()
@@ -298,41 +284,97 @@ std::vector<std::string> Document::list_documents()
 	return list;
 }
 
-Document::Document(int fd, std::string const &name, std::int32_t id)
-try
-	: fd_(fd),
-	  name_(name),
-	  id_(id),
-	  document_closed_(false)
+int Document::open_readable(std::string const &name)
 {
-	off_t const end = ::lseek(fd, 0, SEEK_END);
+	// using Linux API here because of error checking functionality
+	int const fd = ::open(name.c_str(), O_RDONLY);
 
-	if (end == static_cast<off_t>(-1))
+	if (fd < 0)
 	{
-		// should only fail if file too large
-		if (errno == EOVERFLOW)
+		std::ostringstream strm;
+
+		strm << "while opening document <" << name << ">: ";
+
+		if (errno == ENOENT)
 		{
-			throw DocumentError("file too big");
+			strm << "document does not exist";
+
+			throw DocumentDoesntExistError(strm.str());
 		}
+
+		if (errno == EACCES)
+		{
+			strm << "insufficient permissions to open document";
+
+			throw DocumentPermissionsError(strm.str());
+		}
+
+		strm << std::strerror(errno);
+
+		throw DocumentError(strm.str());
 	}
 
-	// should never fail
-	off_t const seek_result = ::lseek(fd, 0, SEEK_SET);
+	return fd;
+}
 
-	assert(seek_result != static_cast<off_t>(-1));
+int Document::open_writable(std::string const &name, bool overwrite)
+{
+	// using Linux API here because of error checking functionality
+	int flags = O_CREAT | O_WRONLY | O_TRUNC;
 
-	// reserve space
-	contents_.resize(end);
-
-	ssize_t const read_result = ::read(fd, &contents_[0], end);
-
-	if (read_result != end)
+	if (!overwrite)
 	{
-		throw DocumentError("unable to read all data from file");
+		flags |= O_EXCL;
+	}
+
+	int const fd = ::open(name.c_str(), flags, 0644);
+
+	if (fd < 0)
+	{
+		std::ostringstream strm;
+
+		strm << "while creating document <" << name << ">: ";
+
+		if (errno == EEXIST)
+		{
+			strm << "document already exists";
+
+			throw DocumentAlreadyExistsError(strm.str());
+		}
+
+		if (errno == EACCES || errno == EROFS)
+		{
+			strm << "insufficient permissions to create document";
+
+			throw DocumentPermissionsError(strm.str());
+		}
+
+		strm << std::strerror(errno);
+
+		throw DocumentError(strm.str());
+	}
+
+	return fd;
+}
+
+void Document::increment_global_document_id()
+{
+	if (global_document_id_ == std::numeric_limits<std::int32_t>::max())
+	{
+		global_document_id_ = 1;
+	}
+	else
+	{
+		global_document_id_++;
 	}
 }
-catch (...)
+
+Document::Document(int fd, std::string const &name)
+	: fd_(fd),
+	  name_(name),
+	  id_(global_document_id_),
+	  document_closed_(false),
+	  contents_fetched_(false)
 {
-	::close(fd);
-	throw;
+	increment_global_document_id();
 }
