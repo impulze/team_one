@@ -16,7 +16,7 @@ void Client::receive(T *destination, size_t size) const
 	ssize_t received = recv(socket, destination, size, MSG_WAITALL);
 	if (received == -1)
 	{ throw Exception::ErrnoError("message reception failed", "recv"); }
-	else if (received < size)
+	else if (static_cast<size_t>(received) < size)
 	{ throw Exception::SocketFailure("too less bytes received", socket); }
 }
 
