@@ -79,7 +79,13 @@ void UserInterface::process_line()
 
 		if (command == current_line_.substr(0, input_end))
 		{
-			command_arguments_t const args = parse_arguments(current_line_.substr(input_end + 1));
+			command_arguments_t args;
+
+			if (input_end != std::wstring::npos)
+			{
+				// there are arguments
+				args = parse_arguments(current_line_.substr(input_end + 1));
+			}
 
 			{
 				std::wostringstream strm;
