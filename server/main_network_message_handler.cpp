@@ -388,10 +388,7 @@ void main_network_message_handler(const Message &message)
 		}
 		case Message::MessageType::TYPE_USER_LOGIN:
 		{
-			//UserDatabase database = UserDatabase::get_instance();
-			// TODO IMPORTANT WARNING ERROR ACHTUNG LOL PROBLEM? WTF? HIR! GEFAHR DANGER
-			// This is only for compile time until the get_instance function is implemented!
-			UserDatabase database = *reinterpret_cast<UserDatabase *>(NULL);
+			UserDatabase database = UserDatabase::get_instance();
 			int32_t user_id;
 
 			try

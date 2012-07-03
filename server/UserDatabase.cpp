@@ -12,6 +12,8 @@
  * Implementation file for the user database implementation.
  */
 
+UserDatabase *UserDatabase::instance_;
+
 namespace
 {
 	//! A global variable which holds the used SQL queries (for easier access).
@@ -66,6 +68,18 @@ namespace userdatabase_errors
 
 	InvalidPasswordError::InvalidPasswordError(std::string const &message)
 		: Failure(message)
+	{
+	}
+
+	UserDatabaseNotConstructedError::UserDatabaseNotConstructedError(std::string const &message)
+		: Failure(message),
+		  std::logic_error(message)
+	{
+	}
+
+	UserDatabaseAlreadyConstructedError::UserDatabaseAlreadyConstructedError(std::string const &message)
+		: Failure(message),
+		  std::logic_error(message)
 	{
 	}
 }
@@ -170,6 +184,17 @@ void UserDatabase::remove(std::string const &name)
 	result = database_->execute_sql(g_sql_queries[3], result[0]["u_id"]);
 
 	user_interface_.printf("removing user: success\n");
+}
+
+UserDatabase &UserDatabase::get_instance()
+{
+	if (!instance_)
+	{
+		using userdatabase_errors::UserDatabaseNotConstructedError;
+		throw UserDatabaseNotConstructedError("a reference to the user database was requested but it wasn't constructed yet");
+	}
+
+	return *instance_;
 }
 
 namespace

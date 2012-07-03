@@ -13,8 +13,6 @@
  * @author Daniel Mierswa <daniel.mierswa@student.hs-rm.de>
  *
  * Abstractions for the user command line interface.
- * One should be able to wait for input and retrieve what was typed
- * in.
  */
 
 namespace userinterface_errors
@@ -37,12 +35,18 @@ namespace userinterface_errors
 	};
 
 	/**
-	 * Represent an error which happens if a command was passed that contains
-	 * whitespace.
+	 * Represent an error which happens if a command was passed with
+	 * wrong amount of arguments or other constraints.
 	 */
 	struct InvalidCommandError
 		: Failure
 	{
+		/**
+		 * Construct a new invalid command error with a specific
+		 * error message.
+		 *
+		 * @param message The error message that describes the error.
+		 */
 		InvalidCommandError(std::string const &message);
 	};
 
@@ -53,15 +57,32 @@ namespace userinterface_errors
 	struct CommandFailedError
 		: Failure
 	{
+		/**
+		 * Construct a new command failed error with a specific
+		 * error message.
+		 *
+		 * @param message The error message that describes the error.
+		 */
 		CommandFailedError(std::string const &message);
 	};
 }
 
+/**
+ * This abstract user interface should be implemented to receive
+ * user input and process lines and then finally execute commands, which
+ * can be registered with register_processor().
+ *
+ * One should be able to wait for input and retrieve what was typed
+ * in.
+ */
 class UserInterface
 {
 public:
+	//! Represents a list of arguments typed in by the user.
 	typedef std::vector<std::wstring> command_arguments_t;
+	//! Represents the function executed for a command entered by the user.
 	typedef std::function<void(command_arguments_t const &)> command_processor_t;
+	//! Represent a list of commands and their executed functions.
 	typedef std::unordered_multimap<std::wstring, command_processor_t> command_processors_t;
 
 	/**
@@ -90,11 +111,11 @@ public:
 	/**
 	 * Run the processing loop as in obtain user input and call the registered
 	 * processors.
-	 * The function returns if a line was entered and the specified callback
-	 * was called.
 	 *
-	 * @throws std::runtime_error If processing failed in such a way
-	 *                            that a restart of the program is required.
+	 * The function never returns.
+	 *
+	 * @throws userinterace_errors::Failure If processing failed in such a way
+	 *                                      that a restart of the program is required.
 	 */
 	virtual void run() = 0;
 
@@ -132,7 +153,8 @@ public:
 	void printf(std::string const &format, T &&... args);
 
 	/**
-	 *  Ask the user to invoke the return key to quit the program.
+	 * This sets an internal state (see quit_) that implementations can
+	 * use to check if the processing loop shall quit.
 	 */
 	void quit();
 
@@ -142,9 +164,13 @@ protected:
 	 * obtained a line of input.
 	 * This will eventually call the registered command processor if
 	 * the command matches.
+	 *
+	 * May execute several or none of the registered processors
+	 * (see register_processor()).
 	 */
 	void process_line();
 
+	//! A storage for the current line, which can be used by the implementation
 	std::wstring current_line_;
 
 private:
@@ -165,21 +191,33 @@ private:
 	 * except the whitespace is escaped with the
 	 * character '\'.
 	 *
-	 * @param The argument string, probably with escaped
-	 *        whitespace characters.
+	 * @param string The argument string, probably with escaped
+	 *               whitespace characters.
 	 * @return The arguments for this command.
 	 */
 	static command_arguments_t parse_arguments(std::wstring const &string);
 
 protected:
-	bool still_running_;
+	/**
+	 * This flag is set by a call to quit() to inform the implementation that the
+	 * user interface shall end processing.
+	 */
 	bool quit_requested_;
 
 private:
+	//! A list of commands and their processors.
 	command_processors_t command_processors_;
+	/**
+	 * Since several threads can execute quit() this mutex is required
+	 * to allow mutual exclusion between those threads
+	 */
 	std::mutex quit_mutex_;
 };
 
+/**
+ * Provide a singleton template which is useful here, because only
+ * one user interface shall be active at a time.
+ */
 template <class Implementation>
 class UserInterfaceSingleton
 	: public UserInterface
@@ -191,6 +229,7 @@ public:
 	 */
 	static Implementation &get_instance();
 
+	//! Store a unique ptr to the implementation details.
 	static std::unique_ptr<Implementation> instance_;
 };
 
