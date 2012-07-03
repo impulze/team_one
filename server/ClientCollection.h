@@ -37,6 +37,7 @@ class ClientCollection
 			=#	Client::send(std::vector<char>)
 		**/
 		void broadcast(const std::vector<char> &bytestream, int32_t document_id = 0) const;
+		void disconnect_client(Client &client);
 		/**
 			Adds all clients' sockets to the given fd_set using the makro FD_SET.
 				set

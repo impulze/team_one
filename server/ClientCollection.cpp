@@ -21,11 +21,18 @@ void ClientCollection::broadcast(const std::vector<char> &bytestream, int32_t do
 {
 	for (const std::pair<int, ClientSptr> &client: clients)
 	{
-		// TODO: add try-catch
 		if (document_id == 0 || client.second->active_document == document_id)
-		{ client.second->send(bytestream); }
+		{
+			try
+			{ client.second->send(bytestream); }
+			catch (...)
+			{}
+		}
 	}
 }
+
+void ClientCollection::disconnect_client(Client &client)
+{ clients.erase(client.socket); }
 
 int ClientCollection::fill_fd_set(fd_set *set) const
 {

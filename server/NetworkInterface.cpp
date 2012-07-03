@@ -64,6 +64,9 @@ void NetworkInterface::add_message_handler(const NetworkMessageHandler handler)
 void NetworkInterface::broadcast_message(const Message &message, int32_t document_id) const
 { message.send_to(clients, document_id); }
 
+void NetworkInterface::disconnect_client(Client &client)
+{ clients.disconnect_client(client); }
+
 void NetworkInterface::remove_message_handler(const NetworkMessageHandler handler)
 { message_handlers.remove(handler); }
 

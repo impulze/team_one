@@ -59,6 +59,7 @@ class NetworkInterface
 			=#	Message::send_to(ClientCollection, int32_t)
 		**/
 		void broadcast_message(const Message &message, int32_t document_id = 0) const;
+		void disconnect_client(Client &client);
 		/**
 			Removes all occurrences of the specified handler from this' handler list.
 				handler
