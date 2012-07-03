@@ -23,10 +23,10 @@ class NetworkInterface
 	public:
 		/**
 			Retrieves the current instance.
-			=>	<no instance created yet> `NULL`
-			=>	`NetworkInterface::instance`
+			=>	`*NetworkInterface::instance`
+			=#	<no instance created yet> Exception::NotYetInstantiated
 		**/
-		static NetworkInterface *get_current_instance(void);
+		static NetworkInterface &get_current_instance(void);
 
 		/**
 			Standard constructor.

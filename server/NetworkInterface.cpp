@@ -16,8 +16,14 @@
 
 NetworkInterface *NetworkInterface::instance = NULL;
 
-NetworkInterface *NetworkInterface::get_current_instance(void)
-{ return instance; }
+NetworkInterface &NetworkInterface::get_current_instance(void)
+{
+	// check if not yet instantiated
+	if (instance == NULL)
+	{ throw Exception::NotYetInstantiated("NetworkInterface not yet instantiated"); }
+
+	return *instance;
+}
 
 NetworkInterface::NetworkInterface(int port, int backlog)
 {
@@ -120,7 +126,7 @@ void NetworkInterface::run(int ipc_socket)
 		for (const Message &message: messages)
 		{
 			// skip if message is empty or invalid
-			if (message.is_empty() || message.type == Message::TYPE_INVALID)
+			if (message.is_empty() || message.type == Message::MessageType::TYPE_INVALID)
 			{ continue; }
 
 			// trigger events for all event handlers
