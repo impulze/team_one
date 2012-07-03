@@ -43,6 +43,12 @@ namespace Exception
 		InvalidMessageType(T msg, Message::MessageType type, int socket);
 	};
 
+	struct NotYetInstantiated : std::logic_error
+	{
+		template<typename T>
+		NotYetInstantiated(T msg);
+	};
+
 	struct SocketFailure : std::runtime_error
 	{
 		const int	socket;

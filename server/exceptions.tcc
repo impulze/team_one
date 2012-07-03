@@ -35,6 +35,11 @@ Exception::InvalidMessageType::InvalidMessageType(T msg, Message::MessageType ty
 {}
 
 template<typename T>
+Exception::NotYetInstantiated::NotYetInstantiated(T msg):
+	std::logic_error(msg)
+{}
+
+template<typename T>
 Exception::SocketFailure::SocketFailure(T msg, int socket):
 	std::runtime_error(msg), socket(socket)
 {}
