@@ -15,7 +15,7 @@ public class Message
 	FIELD_SIZE_STATUS = 1,
 	FIELD_SIZE_TYPE = 1,
 	FIELD_SIZE_USER_NAME = 64;
-	static enum MessageStatus
+	public static enum MessageStatus
 	{
 		STATUS_OK, // success
 		STATUS_OK_CONTENTS_FOLLOWING, // multibyte message with doc contents following
@@ -31,7 +31,7 @@ public class Message
 		STATUS_NOT_OK, // anything but success
 		STATUS_UNKNOWN // unknown/invalid status
 	};
-	static enum MessageType
+	public static enum MessageType
 	{
 		TYPE_INVALID, // invalid message type
 		TYPE_DOC_ACTIVATE, // user activates/switches to doc (id, hash)
