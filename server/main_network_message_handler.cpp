@@ -18,9 +18,61 @@ namespace
 {
 	typedef std::shared_ptr<Document> DocumentSptr;
 
-	std::unordered_map<int32_t, DocumentSptr> doc_by_id;
-	std::unordered_map<std::string, DocumentSptr> doc_by_name;
-	std::unordered_map<ClientSptr, std::unordered_set<DocumentSptr>> open_docs;
+	std::unordered_map<int32_t, DocumentSptr> doc_by_id; // doc_id -> doc
+	std::unordered_map<int32_t, size_t> doc_counter; // doc_id -> doc_opened_count
+	std::unordered_map<std::string, DocumentSptr> doc_by_name; // doc_name -> doc
+	std::unordered_map<int32_t, std::unordered_set<int32_t>> open_docs; // client_id -> doc_id...
+
+	void close_document(int32_t doc_id, int32_t client_id = 0);
+
+	/**
+		Invokes document_close for all documents opened by the given client.
+		@param client_id - id of the respective client
+	**/
+	void close_client_documents(int32_t client_id)
+	{
+		// get the list of opened documents, if existing
+		auto docs = open_docs.find(client_id);
+		if (docs == open_docs.end())
+		{ return; }
+
+		// close all docs opened by this client
+		std::forward_list<int32_t> doc_list;
+		for (const auto &doc_id: docs->second)
+		{ doc_list.push_front(doc_id); }
+		for (const auto &doc_id: doc_list)
+		{ close_document(doc_id, client_id); }
+
+		open_docs.erase(client_id);
+	}
+
+	/**
+		Closes an opened document if it's not needed anymore, otherwise just decrements the document
+		counter and deassigns it from the given client.
+		@param doc_id - document id
+		@param client_id - id of the client that closed this document, 0 if no client involved
+	**/
+	void close_document(int32_t doc_id, int32_t client_id)
+	{
+		// remove from client opened documents
+		if (client_id != 0)
+		{
+			auto docs = open_docs.find(client_id);
+			if (docs != open_docs.end())
+			{ docs->second.erase(doc_id); }
+		}
+		--doc_counter[doc_id];
+
+		// close document if not needed anymore
+		if (doc_counter[doc_id] == 0)
+		{
+			DocumentSptr doc = doc_by_id[doc_id];
+			doc_by_id.erase(doc_id);
+			doc_by_name.erase(doc->get_name());
+			doc_counter.erase(doc_id);
+			doc->close();
+		}
+	}
 
 	/**
 		Creates a new document, if it doesn't exist yet.
@@ -101,15 +153,27 @@ namespace
 		=#	Message::MessageStatus::STATUS_DOC_NOT_EXIST - document doesn't exist
 		=#	Message::MessageStatus::STATUS_IO_ERROR - an IO error occured
 	**/
-	DocumentSptr open_document(const std::string &name)
+	DocumentSptr open_document(const std::string &name, uint32_t client_id = 0)
 	{
+		DocumentSptr result;
+
 		auto iter = doc_by_name.find(name);
 		if (iter == doc_by_name.end())
 		{
 			try
 			{
-				DocumentSptr result = DocumentSptr(new Document(Document::open(name)));
-				doc_by_id[result->get_id()] = doc_by_name[name] = result;
+				// open document and retrieve id
+				result = DocumentSptr(new Document(Document::open(name)));
+				int32_t doc_id = result->get_id();
+
+				// save DocumentSptr in several hashes
+				doc_by_id[doc_id] = doc_by_name[name] = result;
+				doc_counter[doc_id] = 0;
+
+				// add to client opened documents if a client id is provided
+				if (client_id != 0)
+				{ open_docs[client_id].insert(doc_id); }
+
 				return result;
 			}
 			catch (document_errors::DocumentDoesntExistError)
@@ -117,8 +181,13 @@ namespace
 			catch (document_errors::DocumentError)
 			{ throw Message::MessageStatus::STATUS_IO_ERROR; }
 		}
+		else
+		{ result = iter->second; }
+
+		// increment document counter
+		++doc_counter[result->get_id()];
 		
-		return iter->second;
+		return result;
 	}
 
 	/**
