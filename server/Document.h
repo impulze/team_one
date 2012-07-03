@@ -231,6 +231,16 @@ public:
 	static std::vector<std::string> list_documents();
 
 	/**
+	 * Get the name the document was created with.
+	 *
+	 * @return The name passed during construction.
+	 */
+	std::string const &get_name() const
+	{
+		return name_;
+	}
+
+	/**
 	 * A global id for the document.
 	 *
 	 * After opening 2147483647 documents, the id restarts
