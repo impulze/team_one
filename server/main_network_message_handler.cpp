@@ -5,11 +5,13 @@
 **/
 
 #include <unordered_map>
+#include <unordered_set>
 
 #include "Client.h"
 #include "Document.h"
 #include "Message.h"
 #include "NetworkInterface.h"
+#include "UserDatabase.h"
 
 // auxiliary functions
 namespace
@@ -18,6 +20,7 @@ namespace
 
 	std::unordered_map<int32_t, DocumentSptr> doc_by_id;
 	std::unordered_map<std::string, DocumentSptr> doc_by_name;
+	std::unordered_map<ClientSptr, std::unordered_set<DocumentSptr>> open_docs;
 
 	/**
 		Creates a new document, if it doesn't exist yet.
@@ -153,6 +156,50 @@ namespace
 			message.position += message.length;
 		}
 	}
+
+	void sync_bytes(const Client &client, int32_t position, const std::vector<char> &bytes,
+		bool multibyte = true)
+	{
+		DocumentSptr doc;
+
+		// check if client has an active document at all and it's opened
+		if (client.active_document < 1)
+		{ throw Message::MessageStatus::STATUS_USER_NO_ACTIVE_DOC; }
+
+		try
+		{
+			// check if cursor position is known
+			if (position < 0)
+			{ throw Message::MessageStatus::STATUS_USER_CURSOR_UNKNOWN; }
+
+			// get document
+			doc = get_document(client.active_document);
+
+			// get contents and check if cursor position is in bounds
+			auto contents = doc->get_contents();
+			if (static_cast<size_t>(position) >= contents.size())
+			{ throw Message::MessageStatus::STATUS_USER_CURSOR_OUT_OF_BOUNDS; }
+
+			// create synchronization message
+			Message sync;
+			sync.type = multibyte ? Message::MessageType::TYPE_SYNC_MULTIBYTE :
+				Message::MessageType::TYPE_SYNC_BYTE;
+			sync.bytes = multibyte ? bytes : std::vector<char>(bytes.begin(),
+				bytes.begin() + 1);
+			sync.length = multibyte ? bytes.size() : 1;
+			sync.position = position;
+
+			// broadcast synchronization message
+			NetworkInterface::get_current_instance().broadcast_message(sync,
+				client.active_document);
+
+			// apply change to document
+			contents.insert(contents.begin() + sync.position, sync.bytes.begin(),
+				sync.bytes.end());
+		}
+		catch (Message::MessageStatus)
+		{ throw Message::MessageStatus::STATUS_USER_NO_ACTIVE_DOC; }
+	}
 };
 
 void main_network_message_handler(const Message &message)
@@ -165,7 +212,7 @@ void main_network_message_handler(const Message &message)
 
 	switch (message.type)
 	{
-		case Message::TYPE_DOC_ACTIVATE:
+		case Message::MessageType::TYPE_DOC_ACTIVATE:
 		{
 			DocumentSptr doc;
 
@@ -191,7 +238,7 @@ void main_network_message_handler(const Message &message)
 
 			break;
 		}
-		case Message::TYPE_DOC_CREATE:
+		case Message::MessageType::TYPE_DOC_CREATE:
 		{
 			response.name = message.name;
 
@@ -205,7 +252,7 @@ void main_network_message_handler(const Message &message)
 
 			break;
 		}
-		case Message::TYPE_DOC_DELETE:
+		case Message::MessageType::TYPE_DOC_DELETE:
 		{
 			response.name = message.name;
 
@@ -219,7 +266,7 @@ void main_network_message_handler(const Message &message)
 
 			break;
 		}
-		case Message::TYPE_DOC_OPEN:
+		case Message::MessageType::TYPE_DOC_OPEN:
 		{
 			response.name = message.name;
 			DocumentSptr doc;
@@ -248,7 +295,7 @@ void main_network_message_handler(const Message &message)
 
 			break;
 		}
-		case Message::TYPE_DOC_SAVE:
+		case Message::MessageType::TYPE_DOC_SAVE:
 		{
 			response.id = message.id;
 
@@ -267,122 +314,116 @@ void main_network_message_handler(const Message &message)
 			// inform all clients that have this document active about saving
 			if (response.status == Message::MessageStatus::STATUS_OK)
 			{
-				NetworkInterface *net = NetworkInterface::get_current_instance();
-
-				if (net != NULL)
-				{
-					Message announcement;
-					announcement.type = Message::MessageType::TYPE_STATUS;
-					announcement.status = Message::MessageStatus::STATUS_DOC_SAVED;
-				
-					net->broadcast_message(announcement, message.id);
-				}
+				Message announcement;
+				announcement.type = Message::MessageType::TYPE_STATUS;
+				announcement.status = Message::MessageStatus::STATUS_DOC_SAVED;
+			
+				NetworkInterface::get_current_instance().broadcast_message(announcement, message.id);
 			}
 
 			break;
 		}
-		case Message::TYPE_SYNC_BYTE:
-			// TODO put this in a function!
-			DocumentSptr doc;
-			response.type = Message::MessageType::TYPE_STATUS;
-
-			// check if client has an active document at all and it's opened
-			if (message.source->active_document < 1)
-			{ response.status = Message::MessageStatus::STATUS_USER_NO_ACTIVE_DOC; }
-			else
+		case Message::MessageType::TYPE_SYNC_BYTE:
+		case Message::MessageType::TYPE_SYNC_MULTIBYTE:
+		{
+			// sync byte(s)
+			try
 			{
-				try
-				{
-					// get document
-					doc = get_document(message.source->active_document);
-
-					// check if cursor position is known
-					if (message.source->cursor < 0)
-					{ response.status = Message::MessageStatus::STATUS_USER_CURSOR_UNKNOWN; }
-					else
-					{
-						// get contents and check if cursor position is in bounds
-						auto contents = doc->get_contents();
-						if (message.source->cursor >= contents.size())
-						{
-							response.status =
-								Message::MessageStatus::STATUS_USER_CURSOR_OUT_OF_BOUNDS;
-						}
-						else
-						{
-							// sync change to all clients
-							Message sync;
-							sync.type = Message::MessageType::TYPE_SYNC_BYTE;
-							sync.bytes = message.bytes;
-							sync.position = message.source->cursor;
-
-							NetworkInterface::get_current_instance()->broadcast_message(sync,
-								message.source->active_document);
-
-							// apply change to document
-							contents.insert(contents.begin() + sync.position, bytes[0]);
-
-							break;
-						}
-					}
-				}
-				catch (Message::MessageStatus)
-				{ response.status = Message::MessageStatus::STATUS_USER_NO_ACTIVE_DOC; }
+				bool multibyte = (message.type == Message::MessageType::TYPE_SYNC_MULTIBYTE);
+				sync_bytes(*message.source, multibyte ? message.position : message.source->cursor,
+					message.bytes, multibyte);
+			}
+			catch (Message::MessageStatus status)
+			{
+				response.type = Message::MessageType::TYPE_STATUS;
+				response.status = status;
+				response.send_to(*message.source);
 			}
 
-			response.send_to(*message.source);
-
 			break;
-
-		case Message::TYPE_SYNC_CURSOR:
+		}
+		case Message::MessageType::TYPE_SYNC_CURSOR:
+		{
 			message.source->cursor = message.position;
 			break;
-
-		case Message::TYPE_SYNC_DELETION:
-			/* TODO
-				if client has no active remote doc
-					discard (see first UNCLEAR in byte sync)
-					return
-
-				if start is out of bounds
-					discard (see above)
-					return
+		}
+		case Message::MessageType::TYPE_SYNC_DELETION:
+		{
+			try
+			{
+				DocumentSptr doc = get_document(message.source->active_document);
+				auto contents = doc->get_contents();
 				
-				if length too big
-					discard (see above)
-					return
+				// check if start position is out of bounds
+				if (message.position < 0 ||
+					static_cast<size_t>(message.position) >= contents.size())
+				{ throw Message::MessageStatus::STATUS_USER_CURSOR_OUT_OF_BOUNDS; }
 
-				delete specified area in client active doc
-				sync deletion to all clients that have this doc active
-			*/
+				// check if length too big
+				if (static_cast<size_t>(message.position + message.length) > contents.size())
+				{ throw Message::MessageStatus::STATUS_USER_LENGTH_TOO_LONG; }
+
+				// sync deletion
+				Message sync;
+				sync.type = Message::MessageType::TYPE_SYNC_DELETION;
+				sync.position = message.position;
+				sync.length = message.length;
+
+				NetworkInterface::get_current_instance().broadcast_message(sync,
+					message.source->active_document);
+
+				// perform deletion
+				auto start = contents.begin() + sync.position;
+				contents.erase(start, start + sync.length);
+			}
+			catch (Message::MessageStatus status)
+			{
+				response.type = Message::MessageType::TYPE_STATUS;
+				response.status = status == Message::MessageStatus::STATUS_DOC_NOT_EXIST ?
+					Message::MessageStatus::STATUS_USER_NO_ACTIVE_DOC : status;
+				response.send_to(*message.source);
+			}
+
 			break;
+		}
+		case Message::MessageType::TYPE_USER_LOGIN:
+		{
+			//UserDatabase database = UserDatabase::get_instance();
+			// TODO IMPORTANT WARNING ERROR ACHTUNG LOL PROBLEM? WTF? HIR! GEFAHR DANGER
+			// This is only for compile time until the get_instance function is implemented!
+			UserDatabase database = *reinterpret_cast<UserDatabase *>(NULL);
+			int32_t user_id;
 
-		case Message::TYPE_SYNC_MULTIBYTE:
-			/* TODO
-				[same first three checks as in byte sync]
+			try
+			{
+				// log in / get the user id
+				user_id = database.check(message.get_name_string(), message.hash);
+				response.status = Message::MessageStatus::STATUS_OK;
+			}
+			catch (userdatabase_errors::UserDoesntExistError)
+			{ response.status = Message::MessageStatus::STATUS_USER_NOT_EXIST; }
+			catch (userdatabase_errors::InvalidPasswordError)
+			{ response.status = Message::MessageStatus::STATUS_USER_WRONG_PASSWORD; }
+			catch (userdatabase_errors::Failure)
+			{ response.status = Message::MessageStatus::STATUS_DB_ERROR; }
 
-				add byted to current client cursor position in current client active doc
-				sync bytes to all clients that have this doc active
-			*/
+			// send response message
+			response.send_to(*message.source);
+
+			// broadcast user join notification if login was successful
+			if (response.status == Message::MessageStatus::STATUS_OK)
+			{
+				Message announcement;
+				announcement.type = Message::MessageType::TYPE_USER_JOIN;
+				announcement.id = user_id;
+				announcement.name = message.name;
+
+				NetworkInterface::get_current_instance().broadcast_message(announcement);
+			}
+
 			break;
-
-		case Message::TYPE_USER_LOGIN:
-			/* TODO
-				check user credentials
-				if username unknown
-					respond: unknown username
-					return
-				if password wrong
-					respond: wrong password
-					return
-
-				get user id
-				respond: ok
-				sync user join to all users
-			*/
-			break;
-
-		case Message::TYPE_USER_LOGOUT:
+		}
+		case Message::MessageType::TYPE_USER_LOGOUT:
 			/* TODO
 				clear userdata
 				close connection
