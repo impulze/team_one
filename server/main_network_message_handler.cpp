@@ -389,13 +389,11 @@ void main_network_message_handler(const Message &message)
 		case Message::MessageType::TYPE_USER_LOGIN:
 		{
 			UserDatabase database = UserDatabase::get_instance();
-			int32_t user_id;
 
 			try
 			{
 				// log in / get the user id
-				user_id = database.check(message.get_name_string(), message.hash);
-				response.status = Message::MessageStatus::STATUS_OK;
+				message.source->user_id = database.check(message.get_name_string(), message.hash);
 			}
 			catch (userdatabase_errors::UserDoesntExistError)
 			{ response.status = Message::MessageStatus::STATUS_USER_NOT_EXIST; }
@@ -412,7 +410,7 @@ void main_network_message_handler(const Message &message)
 			{
 				Message announcement;
 				announcement.type = Message::MessageType::TYPE_USER_JOIN;
-				announcement.id = user_id;
+				announcement.id = message.source->user_id;
 				announcement.name = message.name;
 
 				NetworkInterface::get_current_instance().broadcast_message(announcement);
@@ -421,13 +419,21 @@ void main_network_message_handler(const Message &message)
 			break;
 		}
 		case Message::MessageType::TYPE_USER_LOGOUT:
-			/* TODO
-				clear userdata
-				close connection
-				sync user quit to all users
-			*/
-			break;
+		{
+			// send simple response
+			response.send_to(*message.source);
 
+			// close the connection
+			NetworkInterface::get_current_instance().disconnect_client(*message.source);
+
+			// broadcase user quit notification
+			Message announcement;
+			announcement.type = Message::MessageType::TYPE_USER_QUIT;
+			announcement.id = message.source->user_id;
+			NetworkInterface::get_current_instance().broadcast_message(announcement);
+
+			break;
+		}
 		default: break;
 	}
 }
