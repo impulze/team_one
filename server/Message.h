@@ -19,14 +19,15 @@ class Client;
 class Message
 {
 	public:
-		enum MessageStatus
+		enum class MessageStatus
 		{
 			STATUS_OK, // success
 			STATUS_OK_CONTENTS_FOLLOWING, // multibyte message with doc contents following
 			STATUS_DOC_ALREADY_EXIST, // doc does already exist
 			STATUS_DOC_NOT_EXIST, // doc does not exist
 			STATUS_DOC_SAVED, // doc was saved by another user
-			STATUS_IO_ERROR, // an IO error occurred
+			STATUS_DB_ERROR, // a DB error occured
+			STATUS_IO_ERROR, // an IO error occured
 			STATUS_USER_NOT_EXIST, // username does not exist
 			STATUS_USER_WRONG_PASSWORD, // password is wrong
 			STATUS_USER_NO_ACTIVE_DOC, // user has no active doc
@@ -35,7 +36,7 @@ class Message
 			STATUS_USER_LENGTH_TOO_LONG, // specified length is too long
 			STATUS_NOT_OK // anything but success
 		};
-		enum MessageType
+		enum class MessageType
 		{
 			TYPE_INVALID, // invalid message type
 			TYPE_DOC_ACTIVATE, // user activates/switches to doc (id, hash)
