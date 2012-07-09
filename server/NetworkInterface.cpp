@@ -1,15 +1,8 @@
-/**
-	file: NetworkInterface.cpp
-	author: Maximilian Lasser [max.lasser@online.de]
-	created: Friday, 11th May 2012
-**/
-
 #include <arpa/inet.h>
+#include <sstream>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
-
-#include <sstream>
 
 #include "exceptions.h"
 #include "NetworkInterface.h"

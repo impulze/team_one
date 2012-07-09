@@ -1,9 +1,3 @@
-/**
-	file: Message.tcc
-	author: Maximilian Lasser [max.lasser@online.de]
-	date: Monday, 11th June 2012
-**/
-
 #ifndef _MESSAGE_TCC_
 #define _MESSAGE_TCC_
 

@@ -1,13 +1,8 @@
-/**
-	file: Client.tcc
-	author: Maximilian Lasser [max.lasser@online.de]
-	created: Thursday, 31st May 2012
-**/
-
 #ifndef _CLIENT_TCC_
 #define _CLIENT_TCC_
 
 #include <sys/socket.h>
+
 #include "exceptions.h"
 
 template<typename T>

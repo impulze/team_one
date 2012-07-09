@@ -1,10 +1,5 @@
-/**
-	file: ClientCollection.h
-	author: Maximilian Lasser [max.lasser@online.de]
-	created: Thursday, 24th May 2012
-**/
-
 #include <sys/select.h>
+
 #include "exceptions.h"
 #include "Client.h"
 #include "ClientCollection.h"

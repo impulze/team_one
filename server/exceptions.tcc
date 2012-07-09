@@ -1,9 +1,3 @@
-/**
-	file: exceptions.tcc
-	author: Maximilian Lasser [max.lasser@online.de]
-	created: Thursday, 24th May 2012
-**/
-
 #ifndef _EXCEPTIONS_TCC_
 #define _EXCEPTIONS_TCC_
 

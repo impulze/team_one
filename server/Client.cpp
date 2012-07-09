@@ -1,11 +1,6 @@
-/**
-	file: Client.cpp
-	author: Maximilian Lasser [max.lasser@online.de]
-	created: Friday, 11th May 2012
-**/
-
-#include <unistd.h> // close
 #include <sys/socket.h>
+#include <unistd.h>
+
 #include "Client.h"
 #include "errno.h"
 #include "exceptions.h"

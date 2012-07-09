@@ -1,9 +1,3 @@
-/**
-	file: Message.cpp
-	author: Maximilian Lasser [max.lasser@online.de]
-	created: Tuesday, 22nd May 2012
-**/
-
 #include "Client.h"
 #include "exceptions.h"
 #include "Message.h"
