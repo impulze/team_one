@@ -48,7 +48,9 @@ void Message::receive_from(ClientSptr client)
 			name.resize(FIELD_SIZE_USER_NAME);
 			client->receive(&name, FIELD_SIZE_USER_NAME);
 			break;
-		case MessageType::TYPE_USER_LOGOUT: break;
+		case MessageType::TYPE_DOC_LIST:
+		case MessageType::TYPE_USER_LOGOUT:
+			break;
 		default:
 			throw Exception::InvalidMessageType("invalid message type", type, client->socket);
 	}
@@ -89,6 +91,9 @@ std::vector<char> &Message::generate_bytestream(std::vector<char> &dest) const
 		case MessageType::TYPE_STATUS:
 			append_bytes(dest, static_cast<char>(status));
 			break;
+		case MessageType::TYPE_DOC_LIST:
+			append_bytes(dest, htonl(length));
+			break;
 		case MessageType::TYPE_SYNC_BYTE:
 		case MessageType::TYPE_SYNC_DELETION:
 		case MessageType::TYPE_SYNC_MULTIBYTE:
@@ -114,6 +119,16 @@ std::vector<char> &Message::generate_bytestream(std::vector<char> &dest) const
 		case MessageType::TYPE_DOC_DELETE:
 			append_bytes(dest, &name, FIELD_SIZE_DOC_NAME);
 			break;
+		case MessageType::TYPE_DOC_LIST:
+		{
+			std::vector<char> buffer = bytes;
+			size_t target_size = FIELD_SIZE_DOC_NAME * length;
+			if (buffer.size() < target_size)
+			{ buffer.resize(target_size, '\0'); }
+
+			append_bytes(dest, &buffer, target_size);
+			break;
+		}
 		case MessageType::TYPE_SYNC_BYTE:
 			append_bytes(dest, &bytes, FIELD_SIZE_BYTE);
 			break;

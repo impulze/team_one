@@ -1,7 +1,7 @@
-/**
-	file: main_network_message_handler.cpp
-	author: Maximilian Lasser [max.lasser@online.de]
-	created: Monday, 11th June 2012
+/**	@file main_network_message_handler.cpp
+
+	@author Maximilian Lasser <max.lasser@online.de>
+	@date Monday, 11th June 2012
 **/
 
 #include <unordered_map>
@@ -126,6 +126,39 @@ namespace
 		{ return doc_by_id.at(id); }
 		catch (std::out_of_range)
 		{ throw Message::MessageStatus::STATUS_DOC_NOT_EXIST; }
+	}
+
+	std::vector<char> get_document_list(void)
+	{
+		// variable initialization
+		const std::vector<std::string> string_list = Document::list_documents();
+		std::vector<char> result(string_list.size() * Message::FIELD_SIZE_DOC_NAME);
+
+		auto pos = result.begin();
+
+		// iterate through document names
+		for (const std::string document_name: string_list)
+		{
+			// skip if document name is empty
+			if (document_name.empty())
+			{ continue; }
+
+			// check if document name has to be padded
+			if (document_name.length() < Message::FIELD_SIZE_DOC_NAME)
+			{
+				result.insert(pos, document_name.front(), document_name.back());
+				std::fill(pos + document_name.length(), pos + Message::FIELD_SIZE_DOC_NAME, '\0');
+			}
+			else
+			{
+				result.insert(pos, document_name.front(), document_name.front() +
+					Message::FIELD_SIZE_DOC_NAME);
+			}
+
+			pos += Message::FIELD_SIZE_DOC_NAME;
+		}
+
+		return result;
 	}
 
 	/**
@@ -330,6 +363,15 @@ void main_network_message_handler(const Message &message)
 			{ delete_document(message.get_name_string()); }
 			catch (Message::MessageStatus status)
 			{ response.status = status; }
+
+			response.send_to(*message.source);
+
+			break;
+		}
+		case Message::MessageType::TYPE_DOC_LIST:
+		{
+			response.bytes = get_document_list();
+			response.length = response.bytes.size() / Message::FIELD_SIZE_DOC_NAME;
 
 			response.send_to(*message.source);
 
