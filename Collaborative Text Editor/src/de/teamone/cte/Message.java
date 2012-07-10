@@ -1,20 +1,23 @@
 package de.teamone.cte;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.Arrays;
+
 public class Message
 {
 	final static int
-	FIELD_SIZE_BYTE = 1,
-	FIELD_SIZE_ID = 4,
-	FIELD_SIZE_DOC_NAME = 128,
-	FIELD_SIZE_HASH = 20,
-	FIELD_SIZE_SIZE = 4,
-	FIELD_SIZE_STATUS = 1,
-	FIELD_SIZE_TYPE = 1,
-	FIELD_SIZE_USER_NAME = 64;
+		FIELD_SIZE_BYTE = 1,
+		FIELD_SIZE_ID = 4,
+		FIELD_SIZE_DOC_NAME = 128,
+		FIELD_SIZE_HASH = 20,
+		FIELD_SIZE_SIZE = 4,
+		FIELD_SIZE_STATUS = 1,
+		FIELD_SIZE_TYPE = 1,
+		FIELD_SIZE_USER_NAME = 64;
+	
 	public static enum MessageStatus
 	{
 		STATUS_OK, // success
@@ -22,6 +25,8 @@ public class Message
 		STATUS_DOC_ALREADY_EXIST, // doc does already exist
 		STATUS_DOC_NOT_EXIST, // doc does not exist
 		STATUS_DOC_SAVED, // doc was saved by another user
+		STATUS_DB_ERROR, // a database error occurred
+		STATUS_IO_ERROR, // an io error occurred
 		STATUS_USER_NOT_EXIST, // username does not exist
 		STATUS_USER_WRONG_PASSWORD, // password is wrong
 		STATUS_USER_NO_ACTIVE_DOC, // user has no active doc
