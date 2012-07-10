@@ -37,8 +37,8 @@ class Message
 			STATUS_DOC_ALREADY_EXIST, ///< doc does already exist
 			STATUS_DOC_NOT_EXIST, ///< doc does not exist
 			STATUS_DOC_SAVED, ///< doc was saved by another user
-			STATUS_DB_ERROR, ///< a DB error occured
-			STATUS_IO_ERROR, ///< an IO error occured
+			STATUS_DB_ERROR, ///< a DB error occurred
+			STATUS_IO_ERROR, ///< an IO error occurred
 			STATUS_USER_NOT_EXIST, ///< username does not exist
 			STATUS_USER_WRONG_PASSWORD, ///< password is wrong
 			STATUS_USER_NO_ACTIVE_DOC, ///< user has no active doc
@@ -57,6 +57,7 @@ class Message
 			TYPE_DOC_ACTIVATE, ///< user activates/switches to doc (id, hash)
 			TYPE_DOC_CREATE, ///< user creates doc (name)
 			TYPE_DOC_DELETE, ///< user deletes doc (name)
+			TYPE_DOC_LIST, ///< document list
 			TYPE_DOC_OPEN, ///< user opens doc (name)
 			TYPE_DOC_SAVE, ///< user saves doc (id)
 			TYPE_STATUS, ///< server -> client only (general status announcement)
