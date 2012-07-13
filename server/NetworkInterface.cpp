@@ -5,6 +5,7 @@
 #include <unistd.h>
 
 #include "exceptions.h"
+#include "Client.h"
 #include "NetworkInterface.h"
 
 NetworkInterface *NetworkInterface::instance = NULL;
@@ -65,7 +66,16 @@ void NetworkInterface::broadcast_message(const Message &message, int32_t documen
 { message.send_to(clients, document_id); }
 
 void NetworkInterface::disconnect_client(Client &client)
-{ clients.disconnect_client(client); }
+{
+	Message dummy_message;
+	dummy_message.type = Message::MessageType::TYPE_CLIENT_DISCONNECT;
+	dummy_message.source = ClientSptr(&client);
+
+	for (NetworkMessageHandler handler: message_handlers)
+	{ handler(dummy_message); }
+
+	clients.disconnect_client(client);
+}
 
 void NetworkInterface::remove_message_handler(const NetworkMessageHandler handler)
 {

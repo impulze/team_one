@@ -70,6 +70,7 @@ class Message
 			TYPE_USER_JOIN, ///< server -> client only (a new user connected)
 			TYPE_USER_QUIT, ///< server -> client only (a user disconnected)
 
+			TYPE_CLIENT_DISCONNECT, ///< pseudo-type for client disconnection
 			TYPE_INIT, ///< pseudo-type for handler initialization
 			TYPE_EXIT ///< pseudo-type on server exit/quit
 		};

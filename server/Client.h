@@ -45,10 +45,11 @@ class Client
 			@param size the amount of bytes to receive
 
 			@exception Exception::ErrnoError if recv (sys/socket.h) failed
-			@exception Exception::SocketFailure if less bytes than requested were received
+			@exception Exception::SocketFailure if less bytes than requested were received or the
+				client already disconnected
 		**/
 		template<typename T>
-		void receive(T *destination, size_t size) const;
+		void receive(T *destination, size_t size);
 		/**
 			Sends the given bytestream to the client.
 
