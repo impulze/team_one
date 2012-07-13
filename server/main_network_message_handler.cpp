@@ -441,8 +441,10 @@ void main_network_message_handler(const Message &message)
 			try
 			{
 				bool multibyte = (message.type == Message::MessageType::TYPE_SYNC_MULTIBYTE);
-				sync_bytes(*message.source, multibyte ? message.position : message.source->cursor,
-					message.bytes, multibyte);
+				int32_t position = multibyte ? message.position : message.source->cursor;
+				sync_bytes(*message.source, position, message.bytes, multibyte);
+				NetworkInterface::get_current_instance().update_client_cursors(position,
+					multibyte ? message.length : 1, message.source->active_document);
 			}
 			catch (Message::MessageStatus status)
 			{
@@ -482,6 +484,8 @@ void main_network_message_handler(const Message &message)
 
 				NetworkInterface::get_current_instance().broadcast_message(sync,
 					message.source->active_document);
+				NetworkInterface::get_current_instance().update_client_cursors(sync.position,
+					-sync.length, message.source->active_document);
 
 				// perform deletion
 				auto start = contents.begin() + sync.position;

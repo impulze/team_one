@@ -101,6 +101,13 @@ class NetworkInterface
 			@see ClientCollection::accept_client(int)
 		**/
 		void run(int ipc_socket);
+		/**
+			Updates the clients' cursor positions.
+			@note This method just forwards to
+				ClientCollection::update_cursors(int32_t, int32_t, int32_t).
+			@see ClientCollection::update_cursors(int32_t, int32_t, int32_t)
+		**/
+		void update_client_cursors(int32_t start, int32_t addend, int32_t document_id);
 	
 	private:
 		static NetworkInterface						*instance; ///< holds this' current instance

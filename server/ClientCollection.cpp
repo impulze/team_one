@@ -63,3 +63,19 @@ MessageList &ClientCollection::get_messages_by_fd_set(fd_set *set, int fd_max, M
 
 	return list;
 }
+
+void ClientCollection::update_cursors(int32_t start, int32_t addend, int32_t document_id)
+{
+	// iterate through all clients
+	for (std::pair<int, ClientSptr> pair: clients)
+	{
+		ClientSptr &client = pair.second;
+
+		// continue if client is not affected
+		if (client->active_document != document_id || client->cursor < start)
+		{ continue; }
+
+		// update cursor
+		client->cursor += addend;
+	}
+}

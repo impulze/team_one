@@ -131,3 +131,7 @@ void NetworkInterface::run(int ipc_socket)
 		}
 	}
 }
+
+void NetworkInterface::update_client_cursors(int32_t start, int32_t addend,
+	int32_t document_id)
+{ clients.update_cursors(start, addend, document_id); }

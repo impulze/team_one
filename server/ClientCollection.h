@@ -81,6 +81,16 @@ class ClientCollection
 			@see Message::receive_from(ClientSptr)
 		**/
 		MessageList &get_messages_by_fd_set(fd_set *set, int fd_max, MessageList &dest);
+		/**
+			Updates the cursor positions of all clients with the specified document as current
+			active one by adding the addend to them, but only if their cursor position is greater
+			than or equal to start.
+			@param start smallest affected cursor position; all cursors smaller than this value
+				won't be affected
+			@param addend value to add to the cursor positions; may be negative
+			@param document_id the document id of the affected document
+		**/
+		void update_cursors(int32_t start, int32_t addend, int32_t document_id);
 		
 	private:
 		std::unordered_map<int, ClientSptr> clients; ///< maps sockets onto Client object pointers
