@@ -52,7 +52,14 @@ NetworkInterface::~NetworkInterface(void)
 { instance = NULL; }
 
 void NetworkInterface::add_message_handler(const NetworkMessageHandler handler)
-{ message_handlers.push_front(handler); }
+{
+	message_handlers.push_front(handler);
+
+	// send initialization message
+	Message dummy_message;
+	dummy_message.type = Message::MessageType::TYPE_INIT;
+	handler(dummy_message);
+}
 
 void NetworkInterface::broadcast_message(const Message &message, int32_t document_id) const
 { message.send_to(clients, document_id); }
@@ -61,7 +68,14 @@ void NetworkInterface::disconnect_client(Client &client)
 { clients.disconnect_client(client); }
 
 void NetworkInterface::remove_message_handler(const NetworkMessageHandler handler)
-{ message_handlers.remove(handler); }
+{
+	message_handlers.remove(handler);
+
+	// send exiting message
+	Message dummy_message;
+	dummy_message.type = Message::MessageType::TYPE_EXIT;
+	handler(dummy_message);
+}
 
 void NetworkInterface::run(int ipc_socket)
 {
