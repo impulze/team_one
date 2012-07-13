@@ -306,6 +306,9 @@ namespace
 
 void main_network_message_handler(const Message &message)
 {
+	// check if user is logged in
+	if (message.source->id == 0 && message.type != Message::MessageType::TYPE_USER_LOGIN)
+	{ return; }
 	
 	// initialize response Message
 	Message response;
@@ -537,6 +540,9 @@ void main_network_message_handler(const Message &message)
 		{
 			// send simple response
 			response.send_to(*message.source);
+
+			// close the user's documents
+			close_client_documents(message.source->id);
 
 			// close the connection
 			NetworkInterface::get_current_instance().disconnect_client(*message.source);
