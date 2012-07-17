@@ -17,7 +17,7 @@
 /**
  * @file server/cte_server.cpp
  * @author Daniel Mierswa <daniel.mierswa@student.hs-rm.de>
- * @@uthor Maximilian Lasser <max.lasser@online.de>
+ * @author Maximilian Lasser <max.lasser@online.de>
  *
  * The application main loop and instantiation code.
  */
