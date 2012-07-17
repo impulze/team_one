@@ -1,9 +1,3 @@
-/**
-	file: cte_server.cpp
-	author: Maximilian Lasser [max.lasser@online.de]
-	created: Wednesday, 23rd May 2012
-**/
-
 #include "CommandProcessor.h"
 #include "NetworkInterface.h"
 #include "NCursesUserInterface.h"
@@ -19,6 +13,14 @@
 #include <iostream>
 #include <sstream>
 #include <thread>
+
+/**
+ * @file cte_server.cpp
+ * @author Daniel Mierswa <daniel.mierswa@student.hs-rm.de>
+ * @@uthor Maximilian Lasser <max.lasser@online.de>
+ *
+ * The application main loop and instantiation code.
+ */
 
 class Message;
 extern void main_network_message_handler(const Message &);
