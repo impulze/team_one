@@ -45,7 +45,7 @@ tests/Server: $(TEST_BIN_OBJS)
 
 depend: $(BIN_DEPS) $(TEST_BIN_DEPS)
 
-%_doxygen: %_Doxyfile
+%_doxygen: %_Doxyfile $(BIN_OBJS) $(TEST_BIN_OBJS)
 	$(DOXYGEN) $^
 
 clean:
@@ -54,6 +54,7 @@ clean:
 	$(RM) $(BIN_DEPS)
 	$(RM) $(TEST_BIN_DEPS)
 	$(RM) -r server_doxygen/
+	$(RM) -r network_doxygen/
 
 valgrind:
 	$(VALGRIND) \
