@@ -45,7 +45,7 @@ tests/Server: $(TEST_BIN_OBJS)
 
 depend: $(BIN_DEPS) $(TEST_BIN_DEPS)
 
-%_doxygen: %_Doxyfile $(BIN_OBJS) $(TEST_BIN_OBJS)
+%_doxygen: %_Doxyfile
 	$(DOXYGEN) $^
 
 clean:
