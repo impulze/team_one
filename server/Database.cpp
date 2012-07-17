@@ -1,7 +1,7 @@
 #include "Database.h"
 
 /**
- * @file Database.cpp
+ * @file server/Database.cpp
  * @author Daniel Mierswa <daniel.mierswa@student.hs-rm.de>
  *
  * Implementation file for common abstractions of database things.

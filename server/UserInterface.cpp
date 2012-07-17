@@ -4,7 +4,7 @@
 #include <sstream>
 
 /**
- * @file UserInterface.cpp
+ * @file server/UserInterface.cpp
  * @author Daniel Mierswa <daniel.mierswa@student.hs-rm.de>
  *
  * Implementation file for common abstractions of user interface things.

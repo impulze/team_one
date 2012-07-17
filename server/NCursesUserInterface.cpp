@@ -5,7 +5,7 @@
 #include <poll.h>
 
 /**
- * @file NCursesUserInterface.cpp
+ * @file server/NCursesUserInterface.cpp
  * @author Daniel Mierswa <daniel.mierswa@student.hs-rm.de>
  *
  * Implementation file for the readline implementation for the user command line

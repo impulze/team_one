@@ -6,18 +6,45 @@
 #include <string>
 #include <vector>
 
+/**
+ * @file server/Hash.h
+ * @author Daniel Mierswa <daniel.mierswa@student.hs-rm.de>
+ *
+ * Interface and common symbols for the SHA-1 hash implementation.
+ */
+
 namespace hash_errors
 {
+	/**
+	 * An invalid hash error.
+	 * This is always relevant when dealing with invalid
+	 * hashes, for example if their sizes are bigger
+	 * or their representation faulty.
+	 */
 	struct InvalidHashError
 		: std::runtime_error
 	{
+		/**
+		 * Construct a new invalid hash error with a specific error message.
+		 *
+		 * @param message The error message that describes the error.
+		 */
 		InvalidHashError(std::string const &message);
 	};
 }
 
+/**
+ * A class providing functionality of SHA-1 hashes.
+ * One can hash some bytes or strings (which are
+ * basically converted to bytes before working with
+ * them).
+ * SHA-1 hashes can also be represented by hexadecimal
+ * strings, see hash_to_string().
+ */
 class Hash
 {
 public:
+	//! The underlying storage for a hash.
 	typedef std::array<char, 20> hash_t;
 
 	/**

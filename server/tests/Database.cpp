@@ -2,6 +2,14 @@
 
 #include <boost/test/unit_test.hpp>
 
+/**
+ * @file server/tests/Database.cpp
+ * @author Daniel Mierswa <daniel.mierswa@student.hs-rm.de>
+ *
+ * Unit tests for the Database interface.
+ */
+
+//! create the database testsuite
 BOOST_AUTO_TEST_SUITE(DatabaseSuite)
 
 namespace
@@ -15,6 +23,7 @@ namespace
 	};
 }
 
+//! test the construction
 BOOST_AUTO_TEST_CASE(construction)
 {
 	using database_errors::Failure;
@@ -26,6 +35,7 @@ BOOST_AUTO_TEST_CASE(construction)
 	}
 }
 
+//! test string passing
 BOOST_AUTO_TEST_CASE(string_passing)
 {
 	using database_errors::Failure;
@@ -37,4 +47,5 @@ BOOST_AUTO_TEST_CASE(string_passing)
 	}
 }
 
+//! end the testsuite
 BOOST_AUTO_TEST_SUITE_END()

@@ -2,6 +2,14 @@
 
 #include <boost/test/unit_test.hpp>
 
+/**
+ * @file server/tests/SQLiteDatabase.cpp
+ * @author Daniel Mierswa <daniel.mierswa@student.hs-rm.de>
+ *
+ * Unit tests for the SQLiteDatabase.
+ */
+
+//! create the SQLite database testsuite
 BOOST_AUTO_TEST_SUITE(SQLiteDatabaseSuite)
 
 namespace
@@ -23,6 +31,7 @@ namespace
 	};
 }
 
+//! test the construction
 BOOST_AUTO_TEST_CASE(construction)
 {
 	using database_errors::SQLiteConnectionError;
@@ -62,6 +71,7 @@ BOOST_AUTO_TEST_CASE(construction)
 		stub_predicate);
 }
 
+//! test if the implementation can handle basic sql
 BOOST_AUTO_TEST_CASE(sql_complete)
 {
 	SQLiteDatabase sqlite_db = SQLiteDatabase::temporary();
@@ -71,6 +81,7 @@ BOOST_AUTO_TEST_CASE(sql_complete)
 	BOOST_CHECK(sqlite_db.complete_sql("CREATE TABLE foo;"));
 }
 
+//! test if the implementation can execute basic sql
 BOOST_AUTO_TEST_CASE(sql_execute)
 {
 	using database_errors::SQLiteError;
@@ -94,6 +105,7 @@ BOOST_AUTO_TEST_CASE(sql_execute)
 	BOOST_CHECK_NO_THROW(sqlite_db.~SQLiteDatabase());
 }
 
+//! test if proper exceptions are passed
 BOOST_AUTO_TEST_CASE(exception_string_passing)
 {
 	using database_errors::SQLiteConnectionError;
@@ -107,4 +119,5 @@ BOOST_AUTO_TEST_CASE(exception_string_passing)
 	}
 }
 
+//! end the testsuite
 BOOST_AUTO_TEST_SUITE_END()

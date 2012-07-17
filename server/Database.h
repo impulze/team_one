@@ -7,7 +7,7 @@
 #include <vector>
 
 /**
- * @file Database.h
+ * @file server/Database.h
  * @author Daniel Mierswa <daniel.mierswa@student.hs-rm.de>
  *
  * Database interface and common objects required for accessing

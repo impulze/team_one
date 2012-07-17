@@ -6,7 +6,7 @@
 #include <stdexcept>
 
 /**
- * @file UserDatabase.cpp
+ * @file server/UserDatabase.cpp
  * @author Daniel Mierswa <daniel.mierswa@student.hs-rm.de>
  *
  * Implementation file for the user database implementation.

@@ -9,7 +9,7 @@
 #include <string>
 
 /**
- * @file UserDatabase.h
+ * @file server/UserDatabase.h
  * @author Daniel Mierswa <daniel.mierswa@student.hs-rm.de>
  *
  * Interface and common symbols for the user implementation.

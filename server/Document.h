@@ -10,7 +10,7 @@
 #include <vector>
 
 /**
- * @file Document.h
+ * @file server/Document.h
  * @author Daniel Mierswa <daniel.mierswa@student.hs-rm.de>
  *
  * Interface and common symbols for the document implementation.

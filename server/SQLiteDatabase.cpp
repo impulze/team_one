@@ -8,7 +8,7 @@
 #include <sqlite3.h>
 
 /**
- * @file SQLiteDatabase.cpp
+ * @file server/SQLiteDatabase.cpp
  * @author Daniel Mierswa <daniel.mierswa@student.hs-rm.de>
  *
  * Implementation file for the SQLite3 implementation for the Database interface.
@@ -35,7 +35,21 @@ namespace database_errors
 
 namespace
 {
-	int execute_sql_callback(void *results, int columns,
+	/**
+	 * This function is used by the SQLite3 C API.
+	 * It will be called by the internal API for adding
+	 * results.
+	 *
+	 * @param results_ptr A pointer the the C++ structure for storing
+	 *                    result pairs. This was passed to the underlying
+	 *                    API when registering the callback.
+	 * @param columns The amount of fetched columns.
+	 * @param column_results An array of values as strings.
+	 * @param column_names An array of names as strings.
+	 *
+	 * @return Always returns 0.
+	 */
+	int execute_sql_callback(void *results_ptr, int columns,
 	                         char **column_results,
 	                         char **column_names);
 }

@@ -8,6 +8,14 @@
 
 #include <boost/test/unit_test.hpp>
 
+/**
+ * @file server/tests/CommandProcessor.cpp
+ * @author Daniel Mierswa <daniel.mierswa@student.hs-rm.de>
+ *
+ * Unit tests for the CommandProcessor.
+ */
+
+//! create the command processor testsuite
 BOOST_AUTO_TEST_SUITE(CommandProcessorSuite)
 
 namespace
@@ -33,8 +41,10 @@ namespace
 	};
 }
 
+//! simple typedef for easier access
 typedef UserInterfaceSingleton<TestUserInterface> TestUserInterfaceSingleton;
 
+//! test the construction
 BOOST_AUTO_TEST_CASE(construction)
 {
 	auto &ui = TestUserInterfaceSingleton::get_instance();
@@ -43,4 +53,5 @@ BOOST_AUTO_TEST_CASE(construction)
 	BOOST_CHECK_NO_THROW(CommandProcessor cp(ui, db));
 }
 
+//! end the testsuite
 BOOST_AUTO_TEST_SUITE_END()

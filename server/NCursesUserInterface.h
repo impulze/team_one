@@ -10,7 +10,7 @@
 #include <thread>
 
 /**
- * @file NCursesUserInterface.h
+ * @file server/NCursesUserInterface.h
  * @author Daniel Mierswa <daniel.mierswa@student.hs-rm.de>
  *
  * NCurses implementation for the user command line interface.
@@ -58,12 +58,18 @@ public:
 
 public:
 	/**
-	 * Release all resources used by the interface and reset
-	 * the window to its initial state.
+	 * See deinitialize().
 	 */
 	~NCursesUserInterface();
 
 	void run();
+
+	/**
+	 * This function is called by the destructor and if an
+	 * invariant class would occur.
+	 * It will release all resources used by the interface
+	 * and reset the window to its initial state.
+	 */
 	void deinitialize();
 
 private:

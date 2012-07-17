@@ -9,7 +9,7 @@
 #include <vector>
 
 /**
- * @file UserInterface.h
+ * @file server/UserInterface.h
  * @author Daniel Mierswa <daniel.mierswa@student.hs-rm.de>
  *
  * Abstractions for the user command line interface.

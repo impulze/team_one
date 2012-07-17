@@ -4,7 +4,7 @@
 #include "Database.h"
 
 /**
- * @file SQLiteDatabase.h
+ * @file server/SQLiteDatabase.h
  * @author Daniel Mierswa <daniel.mierswa@student.hs-rm.de>
  *
  * SQLite3 implementation for the Database interface.
@@ -136,7 +136,7 @@ private:
 	explicit SQLiteDatabase(std::string const &path);
 
 private:
-	// A handle to the SQLite3 database used in the C API.
+	//! A handle to the SQLite3 database used in the C API.
 	::sqlite3 *handle_;
 };
 

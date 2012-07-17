@@ -15,7 +15,7 @@
 #include <thread>
 
 /**
- * @file cte_server.cpp
+ * @file server/cte_server.cpp
  * @author Daniel Mierswa <daniel.mierswa@student.hs-rm.de>
  * @@uthor Maximilian Lasser <max.lasser@online.de>
  *
@@ -25,6 +25,14 @@
 class Message;
 extern void main_network_message_handler(const Message &);
 
+/**
+ * The entry point for the server application binary.
+ *
+ * @param argc The amount of arguments passed to the program + 1.
+ * @param argv An array of argument strings passed to the program. The first
+ *             argument is the name of the binary which was executed.
+ * @returns 0 On success, non-zero otherwise.
+ */
 int main(int argc, char **argv)
 {
 	typedef UserInterfaceSingleton<NCursesUserInterface> NCursesUserInterfaceSingleton;

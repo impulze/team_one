@@ -4,7 +4,7 @@
 #include "UserInterface.h"
 
 /**
- * @file CommandProcessor.h
+ * @file server/CommandProcessor.h
  * @author Daniel Mierswa <daniel.mierswa@student.hs-rm.de>
  *
  * Interface and common symbols for command processing.
