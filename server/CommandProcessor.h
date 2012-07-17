@@ -38,6 +38,10 @@ public:
 	 * If "check_password" is entered, check_password() is called.
 	 * If "check_password_hash" is entered, check_password_hash() is called.
 	 *
+	 * @startuml{CommandProcessor_Communication.svg}
+	 * CommandProcessor -> UserInterface
+	 * @enduml
+	 *
 	 * @param user_interface A reference to the user interface, make
 	 *                       sure it stay valid until the command processor
 	 *                       is destructor, otherwise behaviour is undefined.
