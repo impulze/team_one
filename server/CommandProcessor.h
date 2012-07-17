@@ -48,6 +48,9 @@ public:
 	CommandProcessor(UserInterface &user_interface,
 	                 UserDatabase &user_database);
 
+	// Unregister all registered processors
+	~CommandProcessor();
+
 	/**
 	 * A handler for adding users.
 	 *

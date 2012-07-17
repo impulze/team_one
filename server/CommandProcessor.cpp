@@ -36,6 +36,14 @@ CommandProcessor::CommandProcessor(UserInterface &user_interface,
 			std::bind(&CommandProcessor::check_password_hash, this, _1)));
 }
 
+CommandProcessor::~CommandProcessor()
+{
+	for (auto &proc: registered_processors_)
+	{
+		user_interface_.unregister_processor(proc);
+	}
+}
+
 void CommandProcessor::adduser(command_arguments_t const &arguments)
 {
 	if (arguments.size() != 2)
