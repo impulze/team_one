@@ -20,6 +20,7 @@ OBJS += Document.o UserDatabase.o
 OBJS += main_network_message_handler.o
 
 TEST_OBJS += tests/Database.o tests/SQLiteDatabase.o tests/cte_server.o
+TEST_OBJS += tests/CommandProcessor.o
 
 BIN_OBJS = $(OBJS) cte_server.o
 BIN_SRCS = $(BIN_OBJS:%.o=%.cpp)
