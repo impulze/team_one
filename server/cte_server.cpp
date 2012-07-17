@@ -23,12 +23,6 @@
 class Message;
 extern void main_network_message_handler(const Message &);
 
-namespace
-{
-	// this function is called as soon as the user interface is initialized
-	int main_ui(int argc, char **argv, UserInterface &ui);
-}
-
 int main(int argc, char **argv)
 {
 	typedef UserInterfaceSingleton<NCursesUserInterface> NCursesUserInterfaceSingleton;
@@ -98,11 +92,4 @@ int main(int argc, char **argv)
 	network_thread_canceler();
 
 	return 1;
-}
-
-namespace
-{
-	int main_ui(int argc, char **argv, UserInterface &ui)
-	{
-	}
 }
