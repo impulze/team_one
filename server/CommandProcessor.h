@@ -18,6 +18,47 @@ class UserDatabase;
  * specific command is entered.
  * Remember to register those in the constructor or whereever
  * you please.
+ *
+ * @startuml{CommandProcessor_Communication.svg}
+ *
+ * actor User
+ *
+ * User -> Application: main()
+ * activate Application
+ *
+ * Application -> UserInterface: UserInterface()
+ * activate UserInterface
+ *
+ * Application -> UserDatabase: UserDatabase()
+ * activate UserDatabase
+ *
+ * Application -> CommandProcessor: CommandProcessor(ui, db)
+ * activate CommandProcessor #FB0
+ *
+ * CommandProcessor -> CommandProcessor: create <font color="Orange">adduser_callback_object</font>
+ * activate CommandProcessor #Orange
+ *
+ * CommandProcessor -> UserInterface: register_processor("adduser", <font color="Orange">adduser_callback_object</font>)
+ * activate UserInterface #Orange
+ *
+ * UserInterface --> CommandProcessor: << <font color="Green">reference</font> to registered processor >>
+ * activate CommandProcessor #Green
+ *
+ * UserInterface -> UserDatabase: << interact >>
+ * UserDatabase -> UserInterface: << interact >>
+ *
+ * Application -> CommandProcessor: ~CommandProcessor()
+ *
+ * CommandProcessor -> UserInterface: unregister_processor(<font color="Green">reference</font>)
+ * destroy UserInterface
+ * destroy CommandProcessor
+ * destroy CommandProcessor
+ *
+ * CommandProcessor --> Application
+ * destroy CommandProcessor
+ *
+ * @enduml
+ *
  */
 class CommandProcessor
 {
@@ -37,10 +78,6 @@ public:
 	 * If "quit" is entered, quit() is called.
 	 * If "check_password" is entered, check_password() is called.
 	 * If "check_password_hash" is entered, check_password_hash() is called.
-	 *
-	 * @startuml{CommandProcessor_Communication.svg}
-	 * CommandProcessor -> UserInterface
-	 * @enduml
 	 *
 	 * @param user_interface A reference to the user interface, make
 	 *                       sure it stay valid until the command processor

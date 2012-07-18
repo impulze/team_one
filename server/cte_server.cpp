@@ -28,6 +28,65 @@ extern void main_network_message_handler(const Message &);
 /**
  * The entry point for the server application binary.
  *
+ * @startuml{main_Communication.svg}
+ *
+ * actor User
+ *
+ * == Initialisation ==
+ *
+ * User -> Application: main()
+ * activate Application
+ *
+ * Application -> UserInterface: <b>NCurses</b>UserInterface()
+ * activate UserInterface
+ * UserInterface --> Application: << <font color="green">ui</font> >>
+ *
+ * Application -> Database: <b>SQLite</b>Database("users.sql")
+ * activate Database
+ * Database --> Application: << <font color="red">db</font> >>
+ *
+ * Application -> UserDatabase: UserDatabase(<font color="green">ui</font>, <font color="red">db</font>)
+ * activate UserDatabase
+ * UserDatabase --> Application: << <font color="#FF6600">user_db</font> >>
+ *
+ * Application -> CommandProcessor: CommandProcessor(<font color="green">ui</font>, <font color="#FF6600">user_db</font>)
+ * activate CommandProcessor
+ *
+ * Application -> CommunicationPipe
+ * activate CommunicationPipe
+ *
+ * CommunicationPipe --> Application: << <font color="#3333FF">read_pipe</font>, <font color="#FF0099">write_pipe</font> >>
+ *
+ * Application -> NetworkThread: NetworkThread(<font color="#3333FF">read_pipe</font>)
+ * activate NetworkThread
+ *
+ * NetworkThread -> NetworkInterface: NetworkInterface(port, message_handler)
+ * activate NetworkInterface
+ *
+ * UserInterface -> User: wait()
+ * User -> UserInterface: << some input >>
+ *
+ * NetworkThread -> NetworkInterface: run(<font color="#3333FF">read_pipe</font>)
+ *
+ * NetworkInterface -> OS: select(sockets..., <font color="#3333FF">read_pipe</font>)
+ * NetworkInterface --> NetworkThread
+ * destroy NetworkInterface
+ *
+ * NetworkThread --> Application
+ * destroy NetworkThread
+ *
+ * Application -> UserInterface: quit()
+ * note right
+ *  this will set an
+ *  internal flag, so the
+ *  user interface can quit
+ * end note
+ *
+ * UserInterface -> User: wait()
+ * destroy UserInterface
+ *
+ * @enduml
+ *
  * @param argc The amount of arguments passed to the program + 1.
  * @param argv An array of argument strings passed to the program. The first
  *             argument is the name of the binary which was executed.
