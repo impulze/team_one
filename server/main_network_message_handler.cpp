@@ -306,6 +306,9 @@ namespace
 
 void main_network_message_handler(const Message &message)
 {
+	if (message.type == Message::MessageType::TYPE_INIT)
+		return;
+
 	// check if user is logged in
 	if (message.source->user_id == 0 && message.type != Message::MessageType::TYPE_USER_LOGIN)
 	{ return; }
