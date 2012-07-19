@@ -94,6 +94,7 @@ UserDatabase::UserDatabase(std::shared_ptr<Database> database,
 	database_->execute_sql(g_sql_queries[0]);
 
 	user_interface.printf("user database loading: success\n");
+	instance_ = this;
 }
 
 std::int32_t UserDatabase::check(std::string const &name, Hash::hash_t const &password_hash)
