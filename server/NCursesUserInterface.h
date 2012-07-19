@@ -45,6 +45,26 @@ namespace userinterface_errors
  * Then invokes the UserInterface::process_line() and possibly
  * executes command processors which were registered
  * with UserInterface::register_processor().
+ *
+ * @startuml{NCursesUserInterface_Class.svg}
+ * abstract class UserInterface
+ * UserInterface <|-- NCursesUserInterface
+ * class NCursesUserInterface << abstract >> {
+ * .. Construction ..
+ * + NCursesUserInterface()
+ * + ~NCursesUserInterface()
+ * __
+ * + run()
+ * + deinitialize();
+ * - printfv(format: char const *, ...)
+ * __ attributes __
+ * deinitialized_: bool
+ * screen_: SCREEN *
+ * input_window_: WINDOW *
+ * current_position_: wstring::size_type
+ * printf_mutex_: mutex
+ * }
+ * @enduml
  */
 class NCursesUserInterface
 	: public UserInterface
@@ -56,7 +76,6 @@ public:
 	 */
 	NCursesUserInterface();
 
-public:
 	/**
 	 * See deinitialize().
 	 */

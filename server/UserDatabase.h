@@ -123,6 +123,23 @@ namespace userdatabase_errors
  * This is a singleton, because only one user database shall be active
  * at a time. Although this implementation cannot be default constructed,
  * hence make sure to call the constructor first.
+ *
+ * @startuml{UserDatabase_Class.svg}
+ * class UserDatabase << singleton >> {
+ * .. Construction ..
+ * + UserDatabase(db: shared_ptr<Database>, ui: UserInterface &)
+ * __
+ * + check(name: string const &, password_hash: array<char, 20> const &): int32_t
+ * + create(name: string const &, password_hash: array<char, 20> const &)
+ * + create(name: string const &, password: string const &)
+ * + remove(name: string const &)
+ * + get_instance(): UserDatabase &
+ * __ attributes __
+ * - database_: shared_ptr<Database>
+ * - user_interface_: UserInterface &
+ * - {static} instance_: UserDatabase *
+ * }
+ * @enduml
  */
 class UserDatabase
 {

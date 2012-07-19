@@ -53,6 +53,23 @@ namespace database_errors
 /**
  * An interface for the database portion of the server.
  * It offers member functions for execution of SQL queries.
+ *
+ * @startuml{Database_Class.svg}
+ * class Database << abstract >> {
+ * .. Construction ..
+ * + Database()
+ * + ~Database()
+ * .. Deleted ..
+ * + Database(db: Database const &)
+ * + operator=(db: Database const &): Database &
+ * __ implemented __
+ * << templated >>
+ * + execute_sql(statement: string const &, args: ...): vector<unordered_map<string, string>>
+ * __ abstract __
+ * + complete_sql(statement: string const &) const: bool
+ * + execute_sqlv(statement: char const *, args: ...): vector<unordered_map<string, string>>
+ * }
+ * @enduml
  */
 class Database
 {
@@ -109,7 +126,6 @@ public:
 	template <class... T>
 	results_t execute_sql(std::string const &statement, T &&... args);
 
-private:
 	/**
 	 * Execute one SQL query.
 	 *

@@ -66,6 +66,22 @@ namespace database_errors
 
 /**
  * The SQLite implementation of the database interface.
+ *
+ * @startuml{SQLiteDatabase_Class.svg}
+ * abstract class Database
+ * Database <|-- SQLiteDatabase
+ * class SQLiteDatabase {
+ * .. Construction ..
+ * + SQLiteDatabase(SQLiteDatabase &&)
+ * + ~SQLiteDatabase()
+ * - SQLiteDatabase()
+ * + {static} from_path(path: string const &): SQLiteDatabase
+ * + {static} temporary(): SQLiteDatabase
+ * __
+ * + complete_sql(statement: string const &) const: bool
+ * + execute_sqlv(statement: char const *): vector<unordered_map<string, string>>
+ * }
+ * @enduml
  */
 class SQLiteDatabase
 	: public Database
@@ -112,7 +128,6 @@ public:
 
 	bool complete_sql(std::string const &statement) const;
 
-private:
 	/**
 	 * Execute one SQL query.
 	 *
@@ -124,6 +139,7 @@ private:
 	 */
 	results_t execute_sqlv(char const *statement, ...);
 
+private:
 	/**
 	 * Construct a new SQLite database connection.
 	 *

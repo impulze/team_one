@@ -40,6 +40,14 @@ namespace hash_errors
  * them).
  * SHA-1 hashes can also be represented by hexadecimal
  * strings, see hash_to_string().
+ *
+ * @startuml{Hash_Class.svg}
+ * class Hash {
+ * + {static} hash_bytes(bytes: vector<char> const &): array<char, 20>
+ * + {static} hash_to_string(hash: array<char, 20>): string
+ * + {static} string_to_hash(hash_string: string const &): array<char, 20>
+ * }
+ * @enduml
  */
 class Hash
 {

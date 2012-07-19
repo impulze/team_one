@@ -74,6 +74,38 @@ namespace userinterface_errors
  *
  * One should be able to wait for input and retrieve what was typed
  * in.
+ *
+ * @startuml{UserInterface_Class.svg}
+ * note top of UserInterface
+ *  typedef function<void(vector<wstring> const &)> command_processor_t
+ *  typedef unordered_multimap<wstring, command_processor_t> command_processors_t
+ * end note
+ *
+ * class UserInterface << abstract >> {
+ * .. Construction ..
+ * + UserInterface()
+ * + ~UserInterface()
+ * .. Deleted ..
+ * + UserInterface(ui: UserInterface const &)
+ * + operator=(ui: UserInterface const &): Database &
+ * __ implemented __
+ * + register_processor(command: wstring const &, function: command_processor_t): iterator
+ * + unregister_processor(iterator)
+ * << templated >>
+ * + printf(format: string, args: ...)
+ * + quit()
+ * ~ process_line()
+ * __ abstract __
+ * + run()
+ * - printfv(format: char const *, args: ...)
+ * - {static} parse_arguments(string: wstring): vector<wstring>
+ * __ attributes __
+ * ~ quit_requested_: bool
+ * ~ current_line_: wstring
+ * - command_processors_: command_processors_t
+ * - quit_mutex_: mutex
+ * }
+ * @enduml
  */
 class UserInterface
 {

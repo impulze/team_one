@@ -108,6 +108,43 @@ namespace document_errors
  * modifying the byte container returned by Document::get_contents().
  * The resulting document can then be saved to the disk by calling
  * Document::save().
+ *
+ * @startuml{Document_Class.svg}
+ * class Document {
+ * .. Construction ..
+ * + Document(Document &&)
+ * + ~Document()
+ * - Document(fd: int, name: string const &)
+ * .. Deleted ..
+ * + Document(Document const &)
+ * + operator=(Document const &): Document &
+ * __
+ * + {static} create(name: string, overwrite: bool): Document
+ * + {static} open(name: string): Document
+ * + {static} is_empty(name: string): bool
+ * + {static} list_documents(): vector<string>
+ * + remove()
+ * + save()
+ * + close()
+ * + hash(): array<char, 20>
+ * + get_contents(): vector<char>
+ * + get_name(): string
+ * + get_id(): int32_t
+ * .. helpers ..
+ * - {static} open_readable(name: string): int
+ * - {static} open_writable(name: string, overwrite: bool): int
+ * - {static} increment_global_document_id()
+ * __ attributes __
+ * - contents_: vector<char>
+ * - fd_: int
+ * - name_: string const
+ * - {static} directory_: string const
+ * - {static} global_document_id_: int32_t
+ * - id_: int32_t
+ * - document_closed_: bool
+ * - contents_fetched_: bool
+ * }
+ * @enduml
  */
 class Document
 {
@@ -125,6 +162,18 @@ public:
 	* Also calls close()
 	*/
 	~Document();
+
+	/**
+	 * Delete the default copy constructor, making copying a document object
+	 * impossible.
+	 */
+	Document(Document const &) = delete;
+
+	/**
+	 * Delete the default assignment operator, making assigning a document object
+	 * impossible.
+	 */
+	Document &operator=(Document const &) = delete;
 
 	/**
 	 * Create a document by name.
@@ -297,18 +346,6 @@ private:
 	 * @param name The name the document is referenced by.
 	 */
 	explicit Document(int fd, std::string const &name);
-
-	/**
-	 * Delete the default copy constructor, making copying a document object
-	 * impossible.
-	 */
-	Document(Document const &) = delete;
-
-	/**
-	 * Delete the default assignment operator, making assigning a document object
-	 * impossible.
-	 */
-	Document &operator=(Document const &) = delete;
 
 	//! byte container for the document
 	std::vector<char> contents_;

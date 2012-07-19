@@ -59,6 +59,27 @@ class UserDatabase;
  *
  * @enduml
  *
+ * @startuml{CommandProcessor_Class.svg}
+ * note top of CommandProcessor
+ *  typedef function<void(vector<wstring> const &)> command_processor_t
+ *  typedef unordered_multimap<wstring, command_processor_t> command_processors_t
+ * end note
+ *
+ * class CommandProcessor {
+ * .. Construction ..
+ * + CommandProcessor(ui: UserInterface &, db: UserDatabase &)
+ * + ~CommandProcessor()
+ * + adduser(vector<wstring> const &)
+ * + deluser(vector<wstring> const &)
+ * + check_password(vector<wstring> const &)
+ * + check_password_hash(vector<wstring> const &)
+ * + quit(vector<wstring> const &)
+ * __ attributes __
+ * user_interface_: UserInterface &
+ * user_database_: UserDatabase &
+ * registered_processors_: vector<command_processors_t>
+ * }
+ * @enduml
  */
 class CommandProcessor
 {
