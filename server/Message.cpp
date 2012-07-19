@@ -1,3 +1,9 @@
+/**
+ * @file Message.cpp
+ * @author Maximilian Lasser <max.lasser@online.de>
+ * @author Daniel Mierswa <daniel.mierswa@student.hs-rm.de>
+ */
+
 #include "Client.h"
 #include "exceptions.h"
 #include "Message.h"
@@ -14,7 +20,18 @@ void Message::receive_from(ClientSptr client)
 	source = client;
 
 	// get message type
-	client->receive(&buffer, FIELD_SIZE_TYPE);
+	// added by Daniel: graceful client disconnects
+	try
+	{
+		client->receive(&buffer, FIELD_SIZE_TYPE);
+	}
+	catch (Exception::SocketDisconnected const &error)
+	{
+		// first message bytes -> disconnect is ok -> empty message
+		source = 0;
+		throw;
+	}
+
 	type = static_cast<MessageType>(buffer);
 	
 	// get first data

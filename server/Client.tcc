@@ -1,6 +1,12 @@
 #ifndef _CLIENT_TCC_
 #define _CLIENT_TCC_
 
+/**
+ * @file Client.tcc
+ * @author Maximilian Lasser <max.lasser@online.de>
+ * @author Daniel Mierswa <daniel.mierswa@student.hs-rm.de>
+ */
+
 #include <sys/socket.h>
 
 #include "exceptions.h"
@@ -16,8 +22,7 @@ void Client::receive(T *destination, size_t size)
 	{
 		if (received == 0)
 		{
-			NetworkInterface::get_current_instance().disconnect_client(*this);
-			throw Exception::SocketFailure("client disconnected", socket);
+			throw Exception::SocketDisconnected("client disconnected", socket);
 		}
 		else
 		{ throw Exception::SocketFailure("too less bytes received", socket); }

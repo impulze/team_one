@@ -1,8 +1,17 @@
+/**
+ * @file ClientCollection.cpp
+ * @author Maximilian Lasser <max.lasser@online.de>
+ * @author Daniel Mierswa <daniel.mierswa@student.hs-rm.de>
+ */
+
 #include <sys/select.h>
 
 #include "exceptions.h"
 #include "Client.h"
 #include "ClientCollection.h"
+#include "UserInterface.h"
+
+extern UserInterface *g_user_interface;
 
 Client &ClientCollection::accept_client(int listener)
 {
@@ -27,7 +36,10 @@ void ClientCollection::broadcast(const std::vector<char> &bytestream, int32_t do
 }
 
 void ClientCollection::disconnect_client(Client &client)
-{ clients.erase(client.socket); }
+{
+	g_user_interface->printf("[client %d] disconnecting\n", client.user_id);
+	clients.erase(client.socket);
+}
 
 int ClientCollection::fill_fd_set(fd_set *set) const
 {
@@ -54,7 +66,16 @@ MessageList &ClientCollection::get_messages_by_fd_set(fd_set *set, int fd_max, M
 		{ continue; }
 
 		// read message from set
-		message->receive_from(clients[fd]);
+		// added by Daniel: this was formerly IN the client, causing a huge memory
+		// corruption
+		try
+		{
+			message->receive_from(clients[fd]);
+		}
+		catch (Exception::SocketDisconnected const &ex)
+		{
+			disconnect_client(*clients[fd]);
+		}
 
 		// break if the list is full
 		if (++message == list.end())

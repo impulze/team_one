@@ -1,6 +1,7 @@
 /**	@file exceptions.h
 
 	@author Maximilian Lasser <max.lasser@online.de>
+	@author Daniel Mierswa <daniel.mierswa@student.hs-rm.de>
 	@date Tuesday, 22nd May 2012
 **/
 
@@ -122,6 +123,22 @@ namespace Exception
 		**/
 		template<typename T>
 		SocketFailure(T msg, int socket);
+	};
+
+	/**
+	 * A Socket disconnected while reading.
+	**/
+	struct SocketDisconnected
+		: SocketFailure
+	{
+		/**
+		 * Standard constructor.
+		 *
+		 * @param msg an error message
+		 * @param socket the socket where the disconnect happened
+		 */
+		template <class T>
+		SocketDisconnected(T msg, int socket);
 	};
 };
 

@@ -1,13 +1,23 @@
+/**
+ * @file Client.cpp
+ * @author Maximilian Lasser <max.lasser@online.de>
+ * @author Daniel Mierswa <daniel.mierswa@student.hs-rm.de>
+ */
+
 #include <sys/socket.h>
 #include <unistd.h>
 
 #include "Client.h"
 #include "errno.h"
 #include "exceptions.h"
+#include "UserInterface.h"
+
+extern UserInterface *g_user_interface;
 
 Client::Client(int listener):
 	active_document(0), cursor(0), socket(accept(listener, 0, 0)), user_id(0)
 {
+	g_user_interface->printf("new client\n");
 	// check if a client was accepted
 	if (this->socket == -1)
 	{ throw Exception::ErrnoError("failed to accept a new client", errno, "accept"); }
