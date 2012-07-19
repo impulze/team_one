@@ -259,17 +259,28 @@ int main(int argc, char **argv)
 	UserDatabase user_db(db, ui);
 	CommandProcessor command_processor(ui, user_db);
 	int ipc_sockets[2];
+	int port = 1337;
+
+	if (argc > 1)
+	{
+		std::istringstream strm(argv[1]);
+		strm >> port;
+
+		if (!strm) {
+			throw std::runtime_error("invalid port");
+		}
+	}
 
 	if (::socketpair(AF_UNIX, SOCK_STREAM, 0, ipc_sockets) == -1)
 	{
 		throw std::runtime_error("unable to create local communication sockets");
 	}
 
-	auto const network_thread_function = [&ui, &ipc_sockets]()
+	auto const network_thread_function = [&ui, &ipc_sockets, &port]()
 	{
 		try
 		{
-			NetworkInterface network_interface(1337);
+			NetworkInterface network_interface(port);
 
 			network_interface.add_message_handler(&main_network_message_handler);
 			network_interface.run(ipc_sockets[1]);
