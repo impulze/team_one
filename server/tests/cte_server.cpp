@@ -8,3 +8,8 @@
  *
  * Stub file to get a working unit test binary.
  */
+
+class UserInterface;
+
+//! TODO: quite dirty way to share the user interface
+UserInterface *g_user_interface;

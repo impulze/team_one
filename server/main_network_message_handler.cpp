@@ -12,6 +12,9 @@
 #include "Message.h"
 #include "NetworkInterface.h"
 #include "UserDatabase.h"
+#include "UserInterface.h"
+
+extern UserInterface *g_user_interface;
 
 // auxiliary functions
 namespace
@@ -31,6 +34,7 @@ namespace
 	**/
 	void close_client_documents(int32_t client_id)
 	{
+		g_user_interface->printf("[client %d] closing all client documents\n", client_id);
 		// get the list of opened documents, if existing
 		auto docs = open_docs.find(client_id);
 		if (docs == open_docs.end())
@@ -54,6 +58,7 @@ namespace
 	**/
 	void close_document(int32_t doc_id, int32_t client_id)
 	{
+		g_user_interface->printf("[client %d] closing document %d\n", client_id, doc_id);
 		// remove from client opened documents
 		if (client_id != 0)
 		{
@@ -82,6 +87,7 @@ namespace
 	**/
 	void create_document(const std::string &name)
 	{
+		g_user_interface->printf("creating document: %s\n", name);
 		try
 		{
 			Document doc = Document::create(name);
@@ -101,6 +107,7 @@ namespace
 	**/
 	void delete_document(const std::string &name)
 	{
+		g_user_interface->printf("deleting document: %s\n", name);
 		try
 		{
 			Document doc = Document::open(name);
@@ -122,6 +129,7 @@ namespace
 	**/
 	DocumentSptr get_document(int32_t id)
 	{
+		g_user_interface->printf("getting document: %d\n", id);
 		try
 		{ return doc_by_id.at(id); }
 		catch (std::out_of_range)
@@ -130,6 +138,7 @@ namespace
 
 	std::vector<char> get_document_list(void)
 	{
+		g_user_interface->printf("getting document list\n");
 		// variable initialization
 		const std::vector<std::string> string_list = Document::list_documents();
 		std::vector<char> result(string_list.size() * Message::FIELD_SIZE_DOC_NAME);
@@ -170,6 +179,7 @@ namespace
 	**/
 	bool is_document_empty(const std::string &name)
 	{
+		g_user_interface->printf("checking if %s is empty\n", name);
 		try
 		{ return Document::is_empty(name); }
 		catch (document_errors::DocumentDoesntExistError)
@@ -188,6 +198,7 @@ namespace
 	**/
 	DocumentSptr open_document(const std::string &name, uint32_t client_id = 0)
 	{
+		g_user_interface->printf("[client %d] opening document: %s\n", client_id, name);
 		DocumentSptr result;
 
 		auto iter = doc_by_name.find(name);
@@ -232,6 +243,7 @@ namespace
 	**/
 	void send_document(Document &doc, const Client &client)
 	{
+		g_user_interface->printf("[client %d] sending document: %d\n", client.user_id, doc.get_id());
 		// initialize message
 		Message message;
 		message.type = Message::MessageType::TYPE_SYNC_MULTIBYTE;
@@ -262,6 +274,7 @@ namespace
 	void sync_bytes(const Client &client, int32_t position, const std::vector<char> &bytes,
 		bool multibyte = true)
 	{
+		g_user_interface->printf("[client %d] syncing bytes at %d\n", client.user_id, position);
 		DocumentSptr doc;
 
 		// check if client has an active document at all and it's opened
@@ -318,10 +331,13 @@ void main_network_message_handler(const Message &message)
 	response.status = Message::MessageStatus::STATUS_OK;
 	response.type = message.type;
 
+	std::string print_string;
+
 	switch (message.type)
 	{
 		case Message::MessageType::TYPE_DOC_ACTIVATE:
 		{
+			print_string = "received TYPE_DOC_ACTIVATE message";
 			DocumentSptr doc;
 
 			try
@@ -348,6 +364,7 @@ void main_network_message_handler(const Message &message)
 		}
 		case Message::MessageType::TYPE_DOC_CREATE:
 		{
+			print_string = "received TYPE_DOC_CREATE message";
 			response.name = message.name;
 
 			// try to create the document
@@ -362,6 +379,7 @@ void main_network_message_handler(const Message &message)
 		}
 		case Message::MessageType::TYPE_DOC_DELETE:
 		{
+			print_string = "received TYPE_DOC_DELETE message";
 			response.name = message.name;
 
 			// try to delete the document
@@ -376,6 +394,7 @@ void main_network_message_handler(const Message &message)
 		}
 		case Message::MessageType::TYPE_DOC_LIST:
 		{
+			print_string = "received TYPE_DOC_LIST message";
 			response.bytes = get_document_list();
 			response.length = response.bytes.size() / Message::FIELD_SIZE_DOC_NAME;
 
@@ -385,6 +404,7 @@ void main_network_message_handler(const Message &message)
 		}
 		case Message::MessageType::TYPE_DOC_OPEN:
 		{
+			print_string = "received TYPE_DOC_OPEN message";
 			response.name = message.name;
 			DocumentSptr doc;
 
@@ -414,6 +434,7 @@ void main_network_message_handler(const Message &message)
 		}
 		case Message::MessageType::TYPE_DOC_SAVE:
 		{
+			print_string = "received TYPE_DOC_SAVE message";
 			response.id = message.id;
 
 			// save the document
@@ -443,6 +464,7 @@ void main_network_message_handler(const Message &message)
 		case Message::MessageType::TYPE_SYNC_BYTE:
 		case Message::MessageType::TYPE_SYNC_MULTIBYTE:
 		{
+			print_string = "received TYPE_SYNC_(MULTI)BYTE message";
 			// sync byte(s)
 			try
 			{
@@ -463,11 +485,13 @@ void main_network_message_handler(const Message &message)
 		}
 		case Message::MessageType::TYPE_SYNC_CURSOR:
 		{
+			print_string = "received TYPE_SYNC_CURSOR message";
 			message.source->cursor = message.position;
 			break;
 		}
 		case Message::MessageType::TYPE_SYNC_DELETION:
 		{
+			print_string = "received TYPE_SYNC_DELETION message";
 			try
 			{
 				DocumentSptr doc = get_document(message.source->active_document);
@@ -509,6 +533,7 @@ void main_network_message_handler(const Message &message)
 		}
 		case Message::MessageType::TYPE_USER_LOGIN:
 		{
+			print_string = "received TYPE_USER_LOGIN message";
 			UserDatabase database = UserDatabase::get_instance();
 
 			try
@@ -541,6 +566,7 @@ void main_network_message_handler(const Message &message)
 		}
 		case Message::MessageType::TYPE_USER_LOGOUT:
 		{
+			print_string = "received TYPE_USER_LOGOUT message";
 			// send simple response
 			response.send_to(*message.source);
 
@@ -551,6 +577,7 @@ void main_network_message_handler(const Message &message)
 		}
 		case Message::MessageType::TYPE_CLIENT_DISCONNECT:
 		{
+			print_string = "received TYPE_CLIENT_DISCONNECT message";
 			// close the user's documents
 			close_client_documents(message.source->user_id);
 
@@ -562,6 +589,10 @@ void main_network_message_handler(const Message &message)
 
 			break;
 		}
-		default: break;
+		default:
+			print_string = "received unknown message";
+			break;
 	}
+
+	g_user_interface->printf("%s\n", print_string);
 }
