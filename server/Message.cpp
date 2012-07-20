@@ -46,7 +46,7 @@ void Message::receive_from(ClientSptr client)
 		case MessageType::TYPE_DOC_DELETE:
 		case MessageType::TYPE_DOC_OPEN:
 			name.resize(FIELD_SIZE_DOC_NAME);
-			client->receive(&name, FIELD_SIZE_DOC_NAME);
+			client->receive(&name[0], FIELD_SIZE_DOC_NAME);
 			break;
 		case MessageType::TYPE_SYNC_BYTE:
 			bytes.resize(FIELD_SIZE_BYTE);
@@ -63,7 +63,7 @@ void Message::receive_from(ClientSptr client)
 			break;
 		case MessageType::TYPE_USER_LOGIN:
 			name.resize(FIELD_SIZE_USER_NAME);
-			client->receive(&name, FIELD_SIZE_USER_NAME);
+			client->receive(&name[0], FIELD_SIZE_USER_NAME);
 			break;
 		case MessageType::TYPE_DOC_LIST:
 		case MessageType::TYPE_USER_LOGOUT:
@@ -77,7 +77,7 @@ void Message::receive_from(ClientSptr client)
 	{
 		case MessageType::TYPE_DOC_ACTIVATE:
 		case MessageType::TYPE_USER_LOGIN:
-			client->receive(&hash, FIELD_SIZE_HASH);
+			client->receive(&hash[0], FIELD_SIZE_HASH);
 			break;
 		case MessageType::TYPE_SYNC_DELETION:
 			client->receive(&length, FIELD_SIZE_SIZE);
