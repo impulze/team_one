@@ -186,9 +186,9 @@ public class Message
 		
 		// initialize buffer for reading the rest of the message
 		if (type == MessageType.TYPE_SYNC_MULTIBYTE)
-		{ buffer = ByteBuffer.allocate(type.getMessageSize(true, 0)); }
+		{ buffer = ByteBuffer.allocate(type.getMessageSize(true, 0) - FIELD_SIZE_TYPE); }
 		else
-		{ buffer = ByteBuffer.allocate(type.getMessageSize(true)); }
+		{ buffer = ByteBuffer.allocate(type.getMessageSize(true) - FIELD_SIZE_TYPE); }
 		
 		// read the message
 		channel.read(buffer);
