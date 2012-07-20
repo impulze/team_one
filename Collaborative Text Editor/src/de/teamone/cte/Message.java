@@ -171,6 +171,7 @@ public class Message
 		// initialize buffer for reading message type
 		ByteBuffer buffer = ByteBuffer.allocate(FIELD_SIZE_TYPE);
 		channel.read(buffer);
+		buffer.flip();
 		//ByteBuffer buffer = readField(channel, FIELD_SIZE_TYPE);
 		
 		// read Message type
@@ -192,6 +193,7 @@ public class Message
 		
 		// read the message
 		channel.read(buffer);
+		buffer.flip();
 		
 		// read first field
 		switch (type)
@@ -351,6 +353,7 @@ public class Message
 		}
 		
 		// send
+		buffer.flip();
 		channel.write(buffer);
 	}
 }
