@@ -76,6 +76,11 @@ MessageList &ClientCollection::get_messages_by_fd_set(fd_set *set, int fd_max, M
 		{
 			disconnect_client(*clients[fd]);
 		}
+		catch (std::runtime_error const &ex)
+		{
+			// everything else, kick client, no gentle disconnect
+			clients.erase(fd);
+		}
 
 		// break if the list is full
 		if (++message == list.end())
