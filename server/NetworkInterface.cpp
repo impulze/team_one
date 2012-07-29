@@ -30,6 +30,15 @@ NetworkInterface::NetworkInterface(int port, int backlog)
 	this->listener = socket(AF_INET, SOCK_STREAM, 0);
 	if (this->listener == -1)
 	{ throw Exception::ErrnoError("failed to create listening socket", "socket"); }
+
+	{
+		int const optval = 1;
+
+		if (setsockopt(this->listener, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof optval) != 0)
+		{
+			throw Exception::ErrnoError("failed to set socket option", "socket");
+		}
+	}
 	
 	// generate listening socket address structure and bind
 	struct sockaddr_in socket_address =
