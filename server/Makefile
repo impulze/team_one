@@ -2,12 +2,12 @@ CXX = clang++ -std=c++11
 VALGRIND = valgrind
 DOXYGEN = doxygen
 
-CXXFLAGS += -Wall -Wextra
+CXXFLAGS += -Wall -Wextra -pthread
 CXXFLAGS += $(shell ncursesw5-config --cflags)
 CXXFLAGS += $(shell pkg-config --cflags openssl)
 LINK.o = $(CXX) $(LDFLAGS) $(TARGET_ARCH)
 
-LDLIBS += -lsqlite3
+LDLIBS += -lsqlite3 -pthread
 LDLIBS += $(shell ncursesw5-config --libs)
 LDLIBS += $(shell pkg-config --libs openssl)
 
