@@ -114,8 +114,8 @@ BOOST_AUTO_TEST_CASE(exception_string_passing)
 	// check if the string passed equals the one in what()
 	for (auto const &message: g_sqlite_database_failure_messages)
 	{
-		BOOST_CHECK_EQUAL(message, SQLiteConnectionError(message).what());
-		BOOST_CHECK_EQUAL(message, SQLiteError<>(message).what());
+		BOOST_CHECK_EQUAL("sqlite error: " + message, SQLiteConnectionError(message).what());
+		BOOST_CHECK_EQUAL("sqlite error: " + message, SQLiteError<>(message).what());
 	}
 }
 
