@@ -71,6 +71,15 @@ BOOST_AUTO_TEST_CASE(construction)
 		stub_predicate);
 }
 
+//! destruction tests
+BOOST_AUTO_TEST_CASE(destruction)
+{
+	// destructor shouldn't throw
+	SQLiteDatabase sqlite_db = SQLiteDatabase::temporary();
+
+	BOOST_CHECK_NO_THROW(sqlite_db.~SQLiteDatabase());
+}
+
 //! test if the implementation can handle basic sql
 BOOST_AUTO_TEST_CASE(sql_complete)
 {
@@ -98,11 +107,6 @@ BOOST_AUTO_TEST_CASE(sql_execute)
 	BOOST_CHECK_EXCEPTION(
 		SQLiteDatabase::temporary().
 			execute_sql("CREATE TABLE foo;"), SQLiteError<>, stub_predicate);
-
-	// destructor shouldn't throw
-	SQLiteDatabase sqlite_db = SQLiteDatabase::temporary();
-
-	BOOST_CHECK_NO_THROW(sqlite_db.~SQLiteDatabase());
 }
 
 //! test if proper exceptions are passed
